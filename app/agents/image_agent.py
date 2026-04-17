@@ -25,10 +25,12 @@ Be precise. Do not guess what is not visible. Note image quality limitations.
 
 Additional rules:
 - Count distinct vehicles visible and set vehicle_count. If 0, set vehicle_detected=false.
-- If vehicle_count > 1: write a SPECIFIC clarification_question describing each car by its
-  visible properties (color, position, vehicle type). Example:
-  "Do you mean the blue station wagon on the left or the white SUV on the right?"
+- If vehicle_count > 1: you MUST set needs_clarification=true, detected_make=null,
+  detected_model=null, and write ONE clarification_question describing each car by its
+  visible properties (color, position, body type). Example:
+  "Two cars detected: the red hatchback on the left or the silver SUV on the right — which one?"
   Never write a generic "which vehicle" — always describe what you can actually see.
+  Use observations[] to briefly describe each car you see.
 - Rate image_quality: "good"=clear and well-lit, "poor"=partially readable, "unusable"=nothing determinable.
 - If image_quality is "unusable": set confidence=0.0 and add clarification_question:
   "The image is too blurry or dark — please take a clearer photo."
@@ -119,6 +121,17 @@ async def run_image_agent(state: CarAssistantState) -> ImageAgentOutput:
             or result.image_quality == "unusable"
         )
 
+        # With multiple cars we cannot reliably identify a single vehicle
+        detected_make = None if result.vehicle_count > 1 else result.detected_make
+        detected_model = None if result.vehicle_count > 1 else result.detected_model
+
+        # Ensure multi-car fallback clarification question exists
+        if result.vehicle_count > 1 and not clarification_questions:
+            clarification_questions.append(
+                f"{result.vehicle_count} vehicles detected — which car do you want analyzed? "
+                "Describe it (e.g. 'the red one on the left') or upload a photo of just that car."
+            )
+
         return ImageAgentOutput(
             observations=result.observations,
             possible_findings=result.possible_findings,
@@ -132,8 +145,8 @@ async def run_image_agent(state: CarAssistantState) -> ImageAgentOutput:
             image_quality=result.image_quality,
             needs_clarification=needs_clarification,
             clarification_questions=clarification_questions,
-            detected_make=result.detected_make,
-            detected_model=result.detected_model,
+            detected_make=detected_make,
+            detected_model=detected_model,
         )
 
     except Exception as exc:

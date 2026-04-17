@@ -744,7 +744,15 @@ async function runFullAnalysis() {
     });
     const imgData = await imgResp.json();
     stepDone('step-image');
-    renderImageResult(imgData);
+    const needsClarification = renderImageResult(imgData);
+
+    // If multiple cars / clarification needed — stop here, show results, let user add context
+    if (needsClarification) {
+      document.getElementById('results').classList.add('visible');
+      document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.getElementById('hero-context').focus();
+      return;
+    }
 
     // Step 2: Vehicle lookup if detected
     stepActive('step-adac');
@@ -819,9 +827,26 @@ function renderImageResult(d) {
   const qClass = d.image_quality === 'good' ? 'green' : d.image_quality === 'poor' ? 'amber' : 'red';
   html += `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">`;
   html += `<span class="badge ${qClass}">📷 ${d.image_quality} quality</span>`;
-  if (d.vehicle_detected) html += `<span class="badge indigo">🚗 vehicle detected</span>`;
+  if (d.vehicle_detected) html += `<span class="badge indigo">🚗 ${d.vehicle_count > 1 ? d.vehicle_count + ' vehicles' : 'vehicle'} detected</span>`;
   if (d.damage_detected) html += `<span class="badge red">⚠️ damage found</span>`;
   html += `</div>`;
+
+  // Multi-car clarification — show prominently and return early
+  if (d.vehicle_count > 1 || (d.needs_clarification && d.clarification_questions?.length)) {
+    const q = d.clarification_questions?.[0] || 'Multiple cars detected — which one do you want analyzed?';
+    html += `<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.35);border-radius:10px;padding:14px 16px;margin-top:4px;">
+      <div style="font-size:13px;font-weight:700;color:var(--amber);margin-bottom:8px;">🚗 ${d.vehicle_count > 1 ? d.vehicle_count + ' cars in photo' : 'Clarification needed'}</div>
+      <div style="font-size:13px;line-height:1.6;color:var(--text);">${q}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:10px;">Add a description below to rerun the analysis for the right car.</div>
+    </div>`;
+    if (d.observations?.length) {
+      html += `<div class="section-label" style="margin-top:12px;">What was seen</div>`;
+      d.observations.forEach(o => html += `<div class="observation">${o}</div>`);
+    }
+    body.innerHTML = html;
+    document.getElementById('rc-image').style.display = '';
+    return true; // signal: pipeline should stop
+  }
 
   // Warning lights
   if (d.warning_lights_detected?.length) {
@@ -837,19 +862,13 @@ function renderImageResult(d) {
     d.observations.forEach(o => html += `<div class="observation">${o}</div>`);
   }
 
-  // Clarification
-  if (d.needs_clarification && d.clarification_questions?.length) {
-    html += `<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--amber);margin-top:6px;">`;
-    d.clarification_questions.forEach(q => html += `<div>💬 ${q}</div>`);
-    html += `</div>`;
-  }
-
   if (!d.observations?.length && !d.warning_lights_detected?.length) {
     html += `<div class="empty-state">No specific observations detected.</div>`;
   }
 
   body.innerHTML = html;
   document.getElementById('rc-image').style.display = '';
+  return false;
 }
 
 // ── Render: Vehicle identified ──
