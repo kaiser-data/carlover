@@ -410,6 +410,36 @@
 
   .empty-state { text-align: center; padding: 24px; color: var(--muted); font-size: 13px; }
 
+  /* ── Annotated image canvas ── */
+  .img-annotation-wrap {
+    position: relative; display: inline-block;
+    width: 100%; max-width: 480px;
+    border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .img-annotation-wrap img {
+    display: block; width: 100%; height: auto;
+    transition: transform .4s ease;
+  }
+  .img-annotation-wrap canvas {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none;
+  }
+  .rotation-banner {
+    background: rgba(245,158,11,.12);
+    border: 1px solid rgba(245,158,11,.35);
+    border-radius: 8px; padding: 10px 14px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--amber);
+  }
+  .rotation-banner button {
+    background: rgba(245,158,11,.2); border: 1px solid rgba(245,158,11,.4);
+    color: var(--amber); border-radius: 6px; padding: 4px 12px;
+    font-size: 12px; font-weight: 700; cursor: pointer; margin-left: auto;
+    font-family: inherit;
+  }
+  .rotation-banner button:hover { background: rgba(245,158,11,.35); }
+
   /* ── Suggested questions ── */
   .suggestions-box {
     background: linear-gradient(135deg, var(--surface) 0%, #13172a 100%);
@@ -818,26 +848,68 @@ function buildQueryFromImage(d) {
   return parts.join(' ') || 'What can you tell me about my car from this photo?';
 }
 
+// ── Draw bounding boxes on canvas ──
+function _drawBoxes(canvas, boxes) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const colors = ['#6366f1','#22c55e','#f59e0b','#ef4444','#e879f9'];
+  ctx.clearRect(0, 0, w, h);
+  boxes.forEach((box, i) => {
+    const color = colors[i % colors.length];
+    const x = box.x1 * w, y = box.y1 * h;
+    const bw = (box.x2 - box.x1) * w, bh = (box.y2 - box.y1) * h;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.5;
+    ctx.strokeRect(x, y, bw, bh);
+    // Label background
+    ctx.font = 'bold 11px Inter, sans-serif';
+    const tw = ctx.measureText(box.label).width + 10;
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y - 20, tw, 20);
+    ctx.fillStyle = '#fff';
+    ctx.fillText(box.label, x + 5, y - 5);
+  });
+}
+
 // ── Render: Image result ──
 function renderImageResult(d) {
   const body = document.getElementById('rc-image-body');
   let html = '';
 
-  // Quality badge
+  // Quality badge row
   const qClass = d.image_quality === 'good' ? 'green' : d.image_quality === 'poor' ? 'amber' : 'red';
-  html += `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">`;
+  html += `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">`;
   html += `<span class="badge ${qClass}">📷 ${d.image_quality} quality</span>`;
   if (d.vehicle_detected) html += `<span class="badge indigo">🚗 ${d.vehicle_count > 1 ? d.vehicle_count + ' vehicles' : 'vehicle'} detected</span>`;
   if (d.damage_detected) html += `<span class="badge red">⚠️ damage found</span>`;
+  if (d.image_rotation_deg && d.image_rotation_deg !== 0) html += `<span class="badge amber">🔄 rotated ${d.image_rotation_deg}°</span>`;
   html += `</div>`;
 
-  // Multi-car clarification — show prominently and return early
-  if (d.vehicle_count > 1 || (d.needs_clarification && d.clarification_questions?.length)) {
+  // Annotated photo (shown whenever we have an image)
+  const imgSrc = _fileDataUrl || document.getElementById('hero-url').value.trim();
+  if (imgSrc) {
+    html += `<div class="img-annotation-wrap" id="ann-wrap">
+      <img id="ann-img" src="${imgSrc}" alt="Uploaded photo" />
+      <canvas id="ann-canvas"></canvas>
+    </div>`;
+  }
+
+  // Rotation warning
+  if (d.image_rotation_deg && d.image_rotation_deg !== 0) {
+    html += `<div class="rotation-banner" style="margin-top:10px;">
+      <span>🔄 Image appears rotated ${d.image_rotation_deg}° — auto-correct?</span>
+      <button onclick="applyRotation(${d.image_rotation_deg})">Rotate</button>
+    </div>`;
+  }
+
+  // Multi-car clarification — show prominently
+  const isMultiCar = d.vehicle_count > 1 || (d.needs_clarification && d.clarification_questions?.length);
+  if (isMultiCar) {
     const q = d.clarification_questions?.[0] || 'Multiple cars detected — which one do you want analyzed?';
-    html += `<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.35);border-radius:10px;padding:14px 16px;margin-top:4px;">
+    html += `<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.35);border-radius:10px;padding:14px 16px;margin-top:12px;">
       <div style="font-size:13px;font-weight:700;color:var(--amber);margin-bottom:8px;">🚗 ${d.vehicle_count > 1 ? d.vehicle_count + ' cars in photo' : 'Clarification needed'}</div>
       <div style="font-size:13px;line-height:1.6;color:var(--text);">${q}</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:10px;">Add a description below to rerun the analysis for the right car.</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:10px;">Describe which car below (e.g. "the red one on the left") and click Analyze again.</div>
     </div>`;
     if (d.observations?.length) {
       html += `<div class="section-label" style="margin-top:12px;">What was seen</div>`;
@@ -845,12 +917,14 @@ function renderImageResult(d) {
     }
     body.innerHTML = html;
     document.getElementById('rc-image').style.display = '';
-    return true; // signal: pipeline should stop
+    // Draw boxes after DOM update
+    if (d.vehicle_boxes?.length) requestAnimationFrame(() => _setupCanvas(d.vehicle_boxes));
+    return true; // stop pipeline
   }
 
   // Warning lights
   if (d.warning_lights_detected?.length) {
-    html += `<div class="section-label">Warning Lights</div>`;
+    html += `<div class="section-label" style="margin-top:10px;">Warning Lights</div>`;
     html += `<div style="display:flex;flex-wrap:wrap;gap:4px;">`;
     d.warning_lights_detected.forEach(w => html += `<span class="warning-pill">⚠️ ${w}</span>`);
     html += `</div>`;
@@ -858,17 +932,35 @@ function renderImageResult(d) {
 
   // Observations
   if (d.observations?.length) {
-    html += `<div class="section-label" style="margin-top:8px;">Observations</div>`;
+    html += `<div class="section-label" style="margin-top:10px;">Observations</div>`;
     d.observations.forEach(o => html += `<div class="observation">${o}</div>`);
   }
 
-  if (!d.observations?.length && !d.warning_lights_detected?.length) {
+  if (!d.observations?.length && !d.warning_lights_detected?.length && !imgSrc) {
     html += `<div class="empty-state">No specific observations detected.</div>`;
   }
 
   body.innerHTML = html;
   document.getElementById('rc-image').style.display = '';
+  if (d.vehicle_boxes?.length) requestAnimationFrame(() => _setupCanvas(d.vehicle_boxes));
   return false;
+}
+
+function _setupCanvas(boxes) {
+  const img = document.getElementById('ann-img');
+  const canvas = document.getElementById('ann-canvas');
+  if (!img || !canvas) return;
+  const draw = () => {
+    canvas.width = img.naturalWidth || img.offsetWidth;
+    canvas.height = img.naturalHeight || img.offsetHeight;
+    _drawBoxes(canvas, boxes);
+  };
+  if (img.complete) draw(); else img.onload = draw;
+}
+
+function applyRotation(deg) {
+  const img = document.getElementById('ann-img');
+  if (img) img.style.transform = `rotate(${deg}deg)`;
 }
 
 // ── Render: Vehicle identified ──

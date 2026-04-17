@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from app.graph.state import CarAssistantState
 from app.providers.llm.model_router import get_model
 from app.schemas.common import VehicleInfo
-from app.schemas.image_outputs import ImageAgentOutput
+from app.schemas.image_outputs import ImageAgentOutput, VehicleBoundingBox
 
 _SYSTEM_PROMPT = """You are an automotive image analysis specialist.
 Analyze the provided vehicle image and extract structured observations.
@@ -31,6 +31,9 @@ Additional rules:
   "Two cars detected: the red hatchback on the left or the silver SUV on the right — which one?"
   Never write a generic "which vehicle" — always describe what you can actually see.
   Use observations[] to briefly describe each car you see.
+  For each detected vehicle provide a bounding box in vehicle_boxes[] with normalized
+  coordinates (0.0–1.0 of image width/height). x1,y1 = top-left, x2,y2 = bottom-right.
+  Set label to a short description e.g. "Car 1 – red hatchback (left)".
 - Rate image_quality: "good"=clear and well-lit, "poor"=partially readable, "unusable"=nothing determinable.
 - If image_quality is "unusable": set confidence=0.0 and add clarification_question:
   "The image is too blurry or dark — please take a clearer photo."
@@ -40,8 +43,20 @@ Additional rules:
 - If you can identify the vehicle make and model from the image, set detected_make and
   detected_model (e.g. detected_make="BMW", detected_model="1 Series"). Only set these
   when you are reasonably confident — leave null if uncertain.
+- Detect image orientation. If the image is rotated or tilted, set image_rotation_deg to
+  the clockwise degrees needed to make it upright (0, 90, 180, or 270). 0 = already correct.
 
 Respond in JSON matching the ImageAnalysisResult schema."""
+
+
+class _BBox(BaseModel):
+    model_config = {"extra": "ignore"}
+    label: str = ""
+    x1: float = 0.0
+    y1: float = 0.0
+    x2: float = 1.0
+    y2: float = 1.0
+    confidence: float = 0.8
 
 
 class ImageAnalysisResult(BaseModel):
@@ -61,6 +76,8 @@ class ImageAnalysisResult(BaseModel):
     clarification_questions: list[str] = Field(default_factory=list)
     detected_make: Optional[str] = None
     detected_model: Optional[str] = None
+    vehicle_boxes: list[_BBox] = Field(default_factory=list)
+    image_rotation_deg: int = 0
 
 
 def _build_image_content(image_url: str) -> dict:
@@ -132,6 +149,13 @@ async def run_image_agent(state: CarAssistantState) -> ImageAgentOutput:
                 "Describe it (e.g. 'the red one on the left') or upload a photo of just that car."
             )
 
+        boxes = [
+            VehicleBoundingBox(
+                label=b.label, x1=b.x1, y1=b.y1, x2=b.x2, y2=b.y2, confidence=b.confidence
+            )
+            for b in result.vehicle_boxes
+        ]
+
         return ImageAgentOutput(
             observations=result.observations,
             possible_findings=result.possible_findings,
@@ -147,6 +171,8 @@ async def run_image_agent(state: CarAssistantState) -> ImageAgentOutput:
             clarification_questions=clarification_questions,
             detected_make=detected_make,
             detected_model=detected_model,
+            vehicle_boxes=boxes,
+            image_rotation_deg=result.image_rotation_deg,
         )
 
     except Exception as exc:

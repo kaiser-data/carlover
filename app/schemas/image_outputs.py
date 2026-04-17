@@ -5,6 +5,15 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 
+class VehicleBoundingBox(BaseModel):
+    label: str = ""           # e.g. "Car 1 – red hatchback (left)"
+    x1: float = 0.0           # normalized 0–1, top-left
+    y1: float = 0.0
+    x2: float = 1.0           # normalized 0–1, bottom-right
+    y2: float = 1.0
+    confidence: float = 0.8
+
+
 class ImageAgentOutput(BaseModel):
     """Structured output from the image analysis agent."""
 
@@ -38,6 +47,12 @@ class ImageAgentOutput(BaseModel):
     # Identified vehicle (extracted by vision model)
     detected_make: Optional[str] = Field(default=None, description="Vehicle make if identifiable")
     detected_model: Optional[str] = Field(default=None, description="Vehicle model if identifiable")
+
+    # Bounding boxes for each detected vehicle (normalized 0–1 coords)
+    vehicle_boxes: list[VehicleBoundingBox] = Field(default_factory=list)
+
+    # Rotation correction needed (clockwise degrees): 0 | 90 | 180 | 270
+    image_rotation_deg: int = Field(default=0, description="Degrees clockwise to rotate image to upright")
 
     # ADAC enrichment (populated after vehicle identification)
     adac_summary: Optional[str] = Field(default=None, description="ADAC known issues summary")
