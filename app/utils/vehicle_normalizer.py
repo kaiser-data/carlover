@@ -165,6 +165,18 @@ def normalize_vehicle(
     model = (model or "").strip()
     corrections: list[str] = []
 
+    # ── Step 0: Strip embedded make prefix from model string ──
+    # e.g. model="BMW 2er" → make="BMW", model="2er"
+    if model and not make:
+        for known_make in KNOWN_MAKES:
+            if model.lower().startswith(known_make.lower() + " "):
+                extracted_model = model[len(known_make):].strip()
+                if extracted_model:
+                    corrections.append(f"make extracted from model field: {known_make}")
+                    make = known_make
+                    model = extracted_model
+                    break
+
     # ── Step 1: If make looks like a model name (make filled, model empty) ──
     if make and not model:
         inferred = MODEL_TO_BRAND.get(make.lower())
