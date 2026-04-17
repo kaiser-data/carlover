@@ -346,11 +346,19 @@ async def _fetch_page(brand_slug: str, model_slug: str) -> Optional[tuple[dict, 
     url = f"{_BASE_URL}/{brand_slug}/{model_slug}/"
     logger.info(f"ADAC fetch: {url}")
 
+    # Route through ScraperAPI residential proxy if key is configured
+    from app.config import get_settings
+    scraper_key = get_settings().SCRAPER_API_KEY
+    proxy = f"http://scraperapi:{scraper_key}@proxy.scraperapi.com:8001" if scraper_key else None
+    if proxy:
+        logger.debug("ADAC: using ScraperAPI proxy")
+
     try:
         async with httpx.AsyncClient(
             headers=_HEADERS,
             follow_redirects=True,
-            timeout=15.0,
+            timeout=30.0,
+            proxy=proxy,
         ) as client:
             await asyncio.sleep(_REQUEST_DELAY)
             resp = await client.get(url)

@@ -61,6 +61,7 @@ def deploy(env: dict[str, str]) -> None:
         CreateSandboxFromImageParams(
             image="python:3.12-slim",
             language="python",
+            public=True,             # no OAuth required — accessible without login
             auto_stop_interval=0,    # 0 = never auto-stop (persistent service)
             auto_delete_interval=0,  # 0 = never auto-delete
             env_vars={
@@ -74,7 +75,8 @@ def deploy(env: dict[str, str]) -> None:
                 "SUPABASE_KEY": env.get("SUPABASE_KEY", ""),
                 "DAYTONA_API_KEY": env.get("DAYTONA_API_KEY", ""),
                 "DAYTONA_API_URL": env.get("DAYTONA_API_URL", "https://app.daytona.io/api"),
-                "ADAC_PROVIDER": env.get("ADAC_PROVIDER", "mock"),
+                "ADAC_PROVIDER": env.get("ADAC_PROVIDER", "real"),
+                "SCRAPER_API_KEY": env.get("SCRAPER_API_KEY", ""),
                 "DEBUG": env.get("DEBUG", "false"),
                 "LOG_LEVEL": env.get("LOG_LEVEL", "INFO"),
             },

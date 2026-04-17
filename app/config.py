@@ -49,6 +49,7 @@ class Settings(BaseSettings):
     # Provider selection
     # ------------------------------------------------------------------ #
     ADAC_PROVIDER: str = "mock"  # "mock" | "real"
+    SCRAPER_API_KEY: str = ""   # ScraperAPI residential proxy for ADAC scraping
     MCP_ENABLED: bool = False
 
     # ------------------------------------------------------------------ #
