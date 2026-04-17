@@ -43,69 +43,69 @@
     gap: 0;
   }
 
-  /* ── App nodes ── */
+  /* ── App node ── */
   .app-node {
     flex-shrink: 0;
-    width: 170px;
-    background: #fdf4ff;
-    border: 2px solid #f472b6;
-    border-radius: 22px;
-    padding: 28px 18px;
+    width: 210px;
+    background: linear-gradient(160deg, #fdf4ff, #fce7f3);
+    border: 2.5px solid #f472b6;
+    border-radius: 26px;
+    padding: 36px 22px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     text-align: center;
-    box-shadow: 0 4px 24px rgba(244,114,182,0.15);
+    box-shadow: 0 8px 40px rgba(244,114,182,0.22), 0 2px 8px rgba(244,114,182,0.1);
   }
-  .app-node .big-icon { font-size: 44px; }
-  .app-node .label    { font-size: 16px; font-weight: 800; color: #0f172a; line-height: 1.25; }
-  .app-node .sub      { font-size: 12px; font-weight: 500; color: #be185d; line-height: 1.4; }
+  .app-node .big-icon { font-size: 56px; }
+  .app-node .label    { font-size: 18px; font-weight: 900; color: #0f172a; line-height: 1.25; }
+  .app-node .sub      { font-size: 12px; font-weight: 500; color: #be185d; line-height: 1.5; }
 
-  /* ── Arrows ── */
-  .arrow {
+  /* ── Bidirectional arrow ── */
+  .bidir {
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
-    padding: 0 4px;
+    gap: 6px;
+    padding: 0 6px;
+    width: 90px;
   }
-  .arrow-tag {
+  .bidir-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 0;
+  }
+  .bidir-label {
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 1px;
     text-transform: uppercase;
-    color: #6366f1;
+    text-align: center;
+    width: 100%;
   }
-  .arrow-tag.green { color: #16a34a; }
-  .arrow-row {
-    display: flex;
-    align-items: center;
-    gap: 0;
-  }
-  .shaft-h {
-    width: 36px;
+  .bidir-label.ask  { color: #6366f1; }
+  .bidir-label.resp { color: #16a34a; }
+  .shaft {
+    flex: 1;
     height: 2px;
-    background: linear-gradient(to right, #6366f1aa, #6366f1);
   }
-  .shaft-h.green { background: linear-gradient(to right, #22c55eaa, #22c55e); }
-  .dot-h {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #6366f1;
-    box-shadow: 0 0 12px #6366f1;
-    flex-shrink: 0;
-  }
-  .dot-h.green { background: #16a34a; box-shadow: 0 0 10px rgba(22,163,74,0.35); }
-  .tip-h {
+  .shaft.ask  { background: linear-gradient(to right, #6366f1, #818cf8); }
+  .shaft.resp { background: linear-gradient(to left, #16a34a, #4ade80); }
+  .tip-r {
     width: 0; height: 0;
-    border-top: 6px solid transparent;
-    border-bottom: 6px solid transparent;
-    border-left: 10px solid #6366f1;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 8px solid #818cf8;
   }
-  .tip-h.green { border-left-color: #22c55e; }
+  .tip-l {
+    width: 0; height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-right: 8px solid #4ade80;
+  }
 
   /* ── Daytona box ── */
   .daytona {
@@ -216,12 +216,9 @@
   /* ── Responsive: stack vertically on small screens ── */
   @media (max-width: 760px) {
     .flow { flex-direction: column; }
-    .arrow { flex-direction: column; }
-    .shaft-h { width: 2px; height: 32px; background: linear-gradient(to bottom, #6366f1aa, #6366f1) !important; }
-    .tip-h { border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 10px solid #6366f1; border-bottom: none; }
-    .tip-h.green { border-top-color: #22c55e; border-left-color: transparent; }
+    .bidir { flex-direction: row; width: auto; gap: 12px; }
     .agents { grid-template-columns: repeat(2, 1fr); }
-    .app-node { width: 100%; flex-direction: row; text-align: left; padding: 20px 24px; }
+    .app-node { width: 100%; }
   }
 </style>
 </head>
@@ -237,18 +234,16 @@
   <!-- LEFT: Loveable App -->
   <div class="app-node">
     <div class="big-icon">🚗</div>
-    <div class="label">Carlover<br><span style="color:#f472b6;">Loveable App</span></div>
-    <div class="sub">User asks a question or uploads a photo</div>
+    <div class="label">Carlover<br><span style="color:#ec4899;">Loveable App</span></div>
+    <div class="sub">Ask a question<br>or upload a photo</div>
   </div>
 
-  <!-- Arrow → -->
-  <div class="arrow">
-    <div class="arrow-tag">Question</div>
-    <div class="arrow-row">
-      <div class="dot-h"></div>
-      <div class="shaft-h"></div>
-      <div class="tip-h"></div>
-    </div>
+  <!-- Bidirectional arrow -->
+  <div class="bidir">
+    <div class="bidir-label ask">Ask →</div>
+    <div class="bidir-row"><div class="shaft ask"></div><div class="tip-r"></div></div>
+    <div class="bidir-row"><div class="tip-l"></div><div class="shaft resp"></div></div>
+    <div class="bidir-label resp">← Answer</div>
   </div>
 
   <!-- CENTER: Daytona -->
@@ -290,22 +285,6 @@
     </div>
   </div>
 
-  <!-- Arrow → -->
-  <div class="arrow">
-    <div class="arrow-tag green">Answer</div>
-    <div class="arrow-row">
-      <div class="dot-h green"></div>
-      <div class="shaft-h green"></div>
-      <div class="tip-h green"></div>
-    </div>
-  </div>
-
-  <!-- RIGHT: Loveable App -->
-  <div class="app-node" style="background:#f0fdf4;border-color:#16a34a;box-shadow:0 4px 24px rgba(22,163,74,0.12);">
-    <div class="big-icon">✅</div>
-    <div class="label">Carlover<br><span style="color:#f472b6;">Loveable App</span></div>
-    <div class="sub" style="color:#15803d;">Shows reliability, issues &amp; car image</div>
-  </div>
 
 </div>
 
