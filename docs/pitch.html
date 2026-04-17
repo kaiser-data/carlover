@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CarLover — Pitch</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --pink:    #e5222a;
+    --indigo:  #6366f1;
+    --dark:    #0f172a;
+    --mid:     #475569;
+    --soft:    #94a3b8;
+    --bg:      #ffffff;
+    --surface: #f8fafc;
+    --border:  #e2e8f0;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--dark);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+  }
+
+  /* ─────────────────────────────────────────
+     SLIDE BASE
+  ───────────────────────────────────────── */
+  .slide {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 64px 48px;
+    position: relative;
+  }
+  .slide + .slide { border-top: 1px solid var(--border); }
+
+  .slide-inner {
+    width: 100%;
+    max-width: 960px;
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--soft);
+    margin-bottom: 16px;
+  }
+
+  .slide-num {
+    position: absolute;
+    bottom: 28px;
+    right: 36px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--border);
+    letter-spacing: 1px;
+  }
+
+  /* ─────────────────────────────────────────
+     SLIDE 1 — HERO
+  ───────────────────────────────────────── */
+  .hero {
+    background: var(--dark);
+    color: #fff;
+  }
+  .hero .eyebrow { color: #64748b; }
+
+  .hero-title {
+    font-size: clamp(40px, 7vw, 80px);
+    font-weight: 900;
+    letter-spacing: -2px;
+    line-height: 1.05;
+    margin-bottom: 24px;
+  }
+  .hero-title .r { color: var(--pink); }
+  .hero-title .i { color: #818cf8; }
+
+  .hero-tagline {
+    font-size: clamp(18px, 2.5vw, 26px);
+    font-weight: 500;
+    color: #94a3b8;
+    max-width: 640px;
+    line-height: 1.4;
+    margin-bottom: 40px;
+  }
+  .hero-tagline strong { color: #e2e8f0; font-weight: 700; }
+
+  .hero-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .pill {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 30px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #cbd5e1;
+  }
+  .pill .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
+
+  /* ─────────────────────────────────────────
+     SLIDE 2 — PROBLEM
+  ───────────────────────────────────────── */
+  .big-statement {
+    font-size: clamp(28px, 4vw, 52px);
+    font-weight: 900;
+    letter-spacing: -1px;
+    line-height: 1.15;
+    margin-bottom: 28px;
+  }
+  .big-statement em { font-style: normal; color: var(--pink); }
+
+  .support-text {
+    font-size: 18px;
+    color: var(--mid);
+    max-width: 640px;
+    line-height: 1.65;
+  }
+
+  /* ─────────────────────────────────────────
+     SLIDE 3 — SOLUTION / FLOW
+  ───────────────────────────────────────── */
+  .section-title {
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 900;
+    letter-spacing: -1px;
+    line-height: 1.15;
+    margin-bottom: 10px;
+  }
+  .section-title em { font-style: normal; color: var(--indigo); }
+
+  .section-sub {
+    font-size: 16px;
+    color: var(--soft);
+    margin-bottom: 48px;
+  }
+
+  /* mini flow */
+  .flow-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .flow-step {
+    flex-shrink: 0;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 18px;
+    text-align: center;
+    width: 150px;
+  }
+  .flow-step .fs-icon { font-size: 32px; margin-bottom: 8px; }
+  .flow-step .fs-name { font-size: 13px; font-weight: 800; color: var(--dark); }
+  .flow-step .fs-sub  { font-size: 11px; color: var(--soft); margin-top: 3px; }
+  .flow-arrow {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 6px;
+    gap: 2px;
+  }
+  .fa-line { width: 28px; height: 2px; background: var(--border); }
+  .fa-tip  { width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 8px solid var(--border); }
+
+  /* ─────────────────────────────────────────
+     SLIDE 4 — AGENTS
+  ───────────────────────────────────────── */
+  .agents-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  .agent-card {
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 28px 24px;
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+    background: var(--surface);
+  }
+  .ac-icon {
+    font-size: 36px;
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .ac-name { font-size: 17px; font-weight: 800; color: var(--dark); margin-bottom: 4px; }
+  .ac-desc { font-size: 13px; color: var(--mid); line-height: 1.55; }
+  .ac-source { margin-top: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
+
+  .a-adac    .ac-icon { background: #fef9c3; } .a-adac    .ac-source { color: #b45309; }
+  .a-db      .ac-icon { background: #dcfce7; } .a-db      .ac-source { color: #15803d; }
+  .a-image   .ac-icon { background: #e0f2fe; } .a-image   .ac-source { color: #0369a1; }
+  .a-sandbox .ac-icon { background: #f3e8ff; } .a-sandbox .ac-source { color: #7c3aed; }
+
+  /* ─────────────────────────────────────────
+     SLIDE 5 — TECH STACK
+  ───────────────────────────────────────── */
+  .stack-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .stack-card {
+    border: 1.5px solid var(--border);
+    border-radius: 18px;
+    padding: 24px 20px;
+    background: var(--surface);
+  }
+  .sc-icon  { font-size: 30px; margin-bottom: 12px; }
+  .sc-name  { font-size: 16px; font-weight: 800; color: var(--dark); margin-bottom: 4px; }
+  .sc-desc  { font-size: 12px; color: var(--soft); line-height: 1.55; }
+  .sc-badge {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+
+  /* ─────────────────────────────────────────
+     SLIDE 6 — DATA
+  ───────────────────────────────────────── */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 48px;
+  }
+  .stat-card {
+    text-align: center;
+    padding: 32px 20px;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    background: var(--surface);
+  }
+  .stat-num  { font-size: clamp(36px, 5vw, 56px); font-weight: 900; letter-spacing: -2px; color: var(--dark); line-height: 1; margin-bottom: 8px; }
+  .stat-label{ font-size: 13px; font-weight: 600; color: var(--soft); }
+
+  .adac-note {
+    background: #fffbeb;
+    border: 1.5px solid #fbbf24;
+    border-radius: 16px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 14px;
+    color: #78350f;
+    line-height: 1.55;
+  }
+  .adac-note .note-icon { font-size: 28px; flex-shrink: 0; }
+
+  /* ─────────────────────────────────────────
+     SLIDE 7 — CLOSE
+  ───────────────────────────────────────── */
+  .close-slide { background: var(--dark); color: #fff; text-align: center; }
+  .close-title {
+    font-size: clamp(36px, 6vw, 68px);
+    font-weight: 900;
+    letter-spacing: -2px;
+    line-height: 1.1;
+    margin-bottom: 20px;
+  }
+  .close-title .r { color: var(--pink); }
+  .close-title .i { color: #818cf8; }
+  .close-sub { font-size: 18px; color: #64748b; margin-bottom: 40px; }
+  .close-links { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+  .close-link {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 12px 22px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-decoration: none;
+  }
+  .close-link:hover { color: #fff; }
+
+  @media (max-width: 640px) {
+    .slide { padding: 48px 24px; }
+    .agents-grid { grid-template-columns: 1fr; }
+    .stack-row   { grid-template-columns: 1fr; }
+    .stat-row    { grid-template-columns: 1fr; }
+    .flow-step   { width: 120px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── SLIDE 1: HERO ── -->
+<div class="slide hero">
+  <div class="slide-inner">
+    <div class="eyebrow">Architecture Pitch &nbsp;·&nbsp; 2026</div>
+    <div class="hero-title">
+      Car<span class="r">Lover</span><br>
+      on <span class="r">Loveable</span><br>
+      &amp; <span class="i">Daytona</span>
+    </div>
+    <div class="hero-tagline">
+      <strong>Your car's dirty little secrets.</strong><br>
+      Real breakdown data. AI agents. Instant answers.
+    </div>
+    <div class="hero-pills">
+      <div class="pill"><span class="dot" style="background:#e5222a"></span>Loveable Frontend</div>
+      <div class="pill"><span class="dot" style="background:#6366f1"></span>Daytona Cloud</div>
+      <div class="pill"><span class="dot" style="background:#fbbf24"></span>ADAC Data</div>
+      <div class="pill"><span class="dot" style="background:#a78bfa"></span>Featherless AI</div>
+      <div class="pill"><span class="dot" style="background:#34d399"></span>Supabase</div>
+    </div>
+  </div>
+  <div class="slide-num">01 / 07</div>
+</div>
+
+<!-- ── SLIDE 2: PROBLEM ── -->
+<div class="slide">
+  <div class="slide-inner">
+    <div class="eyebrow">The Problem</div>
+    <div class="big-statement">
+      Buying a used car is a<br><em>leap of faith.</em>
+    </div>
+    <div class="support-text">
+      Millions of car buyers rely on gut feeling, seller promises, or generic reviews.
+      Real breakdown statistics exist — but they're buried in German auto-club reports,
+      hard to find, and impossible to query in plain language.<br><br>
+      <strong style="color:var(--dark)">CarLover makes that data instant, conversational, and visual.</strong>
+    </div>
+  </div>
+  <div class="slide-num">02 / 07</div>
+</div>
+
+<!-- ── SLIDE 3: HOW IT WORKS ── -->
+<div class="slide" style="background:var(--surface);">
+  <div class="slide-inner">
+    <div class="eyebrow">How It Works</div>
+    <div class="section-title">One question.<br><em>Four agents. One answer.</em></div>
+    <div class="section-sub">Every user question flows through a five-step pipeline inside the Daytona sandbox.</div>
+
+    <div class="flow-row">
+      <div class="flow-step">
+        <div class="fs-icon">🎯</div>
+        <div class="fs-name">Understand</div>
+        <div class="fs-sub">Classify intent</div>
+      </div>
+      <div class="flow-arrow"><div class="fa-line"></div><div class="fa-tip"></div></div>
+      <div class="flow-step">
+        <div class="fs-icon">🔍</div>
+        <div class="fs-name">Identify</div>
+        <div class="fs-sub">Extract vehicle</div>
+      </div>
+      <div class="flow-arrow"><div class="fa-line"></div><div class="fa-tip"></div></div>
+      <div class="flow-step" style="border-color:#6366f1;background:#eef2ff;">
+        <div class="fs-icon">⚡</div>
+        <div class="fs-name">Research</div>
+        <div class="fs-sub">4 agents in parallel</div>
+      </div>
+      <div class="flow-arrow"><div class="fa-line"></div><div class="fa-tip"></div></div>
+      <div class="flow-step">
+        <div class="fs-icon">🧠</div>
+        <div class="fs-name">Synthesise</div>
+        <div class="fs-sub">AI writes answer</div>
+      </div>
+      <div class="flow-arrow"><div class="fa-line"></div><div class="fa-tip"></div></div>
+      <div class="flow-step" style="border-color:#22c55e;background:#f0fdf4;">
+        <div class="fs-icon">✅</div>
+        <div class="fs-name">Respond</div>
+        <div class="fs-sub">Back to app</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">03 / 07</div>
+</div>
+
+<!-- ── SLIDE 4: AGENTS ── -->
+<div class="slide">
+  <div class="slide-inner">
+    <div class="eyebrow">The Agents</div>
+    <div class="section-title">Four specialists.<br><em>Running in parallel.</em></div>
+    <div class="section-sub">Each agent handles one domain — all results merge into a single answer.</div>
+
+    <div class="agents-grid">
+      <div class="agent-card a-adac">
+        <div class="ac-icon">📊</div>
+        <div>
+          <div class="ac-name">ADAC Agent</div>
+          <div class="ac-desc">Scrapes Germany's largest auto-club database. Returns year-by-year breakdown statistics, all generations, and known defect patterns.</div>
+          <div class="ac-source">↗ adac.de · Pannenstatistik</div>
+        </div>
+      </div>
+      <div class="agent-card a-db">
+        <div class="ac-icon">🗄️</div>
+        <div>
+          <div class="ac-name">Database Agent</div>
+          <div class="ac-desc">Queries your own Supabase database for past service cases, workshop-specific weaknesses, and saved user history.</div>
+          <div class="ac-source">↗ Supabase · Postgres</div>
+        </div>
+      </div>
+      <div class="agent-card a-image">
+        <div class="ac-icon">📷</div>
+        <div>
+          <div class="ac-name">Image Agent</div>
+          <div class="ac-desc">Vision LLM analyses a car photo — identifies make/model, warning lights, visible damage, and image quality.</div>
+          <div class="ac-source">↗ Featherless AI · Qwen3-VL</div>
+        </div>
+      </div>
+      <div class="agent-card a-sandbox">
+        <div class="ac-icon">🔧</div>
+        <div>
+          <div class="ac-name">Sandbox Agent</div>
+          <div class="ac-desc">Spins up an ephemeral Daytona sandbox to run diagnostic code — useful for complex fault-tree analysis.</div>
+          <div class="ac-source">↗ Daytona API · ephemeral sandbox</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">04 / 07</div>
+</div>
+
+<!-- ── SLIDE 5: TECH STACK ── -->
+<div class="slide" style="background:var(--surface);">
+  <div class="slide-inner">
+    <div class="eyebrow">Tech Stack</div>
+    <div class="section-title">Built on the<br><em>right tools.</em></div>
+    <div class="section-sub">Every layer chosen for speed, reliability, and developer experience.</div>
+
+    <div class="stack-row">
+      <div class="stack-card">
+        <div class="sc-icon">❤️</div>
+        <div class="sc-name">Loveable</div>
+        <div class="sc-desc">Frontend app. Chat UI, image upload, user login, experience profiles, saved car database.</div>
+        <div class="sc-badge" style="background:#fee2e2;color:#b91c1c;">Frontend</div>
+      </div>
+      <div class="stack-card">
+        <div class="sc-icon">☁️</div>
+        <div class="sc-name">Daytona</div>
+        <div class="sc-desc">Cloud sandbox hosting the FastAPI server and all agents. Secure, isolated, always-on.</div>
+        <div class="sc-badge" style="background:#eef2ff;color:#4338ca;">Infrastructure</div>
+      </div>
+      <div class="stack-card">
+        <div class="sc-icon">🔗</div>
+        <div class="sc-name">LangGraph</div>
+        <div class="sc-desc">Orchestrates the multi-agent pipeline. Parallel agent execution, state management, and conditional routing.</div>
+        <div class="sc-badge" style="background:#f0fdf4;color:#15803d;">Orchestration</div>
+      </div>
+      <div class="stack-card">
+        <div class="sc-icon">🧬</div>
+        <div class="sc-name">Featherless AI</div>
+        <div class="sc-desc">30,000+ open-source models on demand. Powers intent classification, answer synthesis, and vision analysis (Qwen3-VL).</div>
+        <div class="sc-badge" style="background:#f3e8ff;color:#7c3aed;">AI Models</div>
+      </div>
+      <div class="stack-card">
+        <div class="sc-icon">🏎️</div>
+        <div class="sc-name">ADAC.de</div>
+        <div class="sc-desc">Real breakdown statistics scraped from Germany's largest automobile club. Not estimates — actual survey data from millions of vehicles.</div>
+        <div class="sc-badge" style="background:#fffbeb;color:#b45309;">Real Data</div>
+      </div>
+      <div class="stack-card">
+        <div class="sc-icon">🗃️</div>
+        <div class="sc-name">Supabase</div>
+        <div class="sc-desc">Postgres database for user accounts, service history, saved vehicles, and workshop-specific knowledge.</div>
+        <div class="sc-badge" style="background:#ecfdf5;color:#065f46;">Database</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">05 / 07</div>
+</div>
+
+<!-- ── SLIDE 6: DATA ── -->
+<div class="slide">
+  <div class="slide-inner">
+    <div class="eyebrow">The Data Advantage</div>
+    <div class="section-title">Real numbers.<br><em>Not estimates.</em></div>
+    <div class="section-sub">ADAC surveys millions of German-registered vehicles every year. This is the data CarLover is built on.</div>
+
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-num">1.4</div>
+        <div class="stat-label">Breakdowns per 1,000 vehicles<br>BMW X3 2021 — "Very Good"</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">8+</div>
+        <div class="stat-label">Years of reliability history<br>per model, per generation</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">100s</div>
+        <div class="stat-label">European models covered<br>with full defect patterns</div>
+      </div>
+    </div>
+
+    <div class="adac-note">
+      <div class="note-icon">⚠️</div>
+      <div>
+        <strong>Why this matters:</strong> Every reliability score in CarLover is sourced directly from ADAC Pannenstatistik —
+        Germany's gold standard for vehicle reliability. Each year has its own class-average threshold so you know
+        exactly how your car compares to others in its segment, not just in isolation.
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">06 / 07</div>
+</div>
+
+<!-- ── SLIDE 7: CLOSE ── -->
+<div class="slide close-slide">
+  <div class="slide-inner" style="text-align:center;">
+    <div class="eyebrow" style="color:#475569;">Built for car lovers</div>
+    <div class="close-title">
+      Your car's<br><span class="r">dirty little</span><br><span class="i">secrets.</span>
+    </div>
+    <div class="close-sub">CarLover on Loveable &amp; Daytona</div>
+    <div class="close-links">
+      <a class="close-link" href="https://github.com/kaiser-data/carlover">github.com/kaiser-data/carlover</a>
+      <a class="close-link" href="https://8000-7qkjcemv84kyycxg.daytonaproxy01.eu/ui/">Live Demo ↗</a>
+      <a class="close-link" href="daytona_overview.html">Architecture Diagram</a>
+      <a class="close-link" href="loveable_adac_integration.md">Integration Guide</a>
+    </div>
+  </div>
+  <div class="slide-num" style="color:#374151;">07 / 07</div>
+</div>
+
+</body>
+</html>
