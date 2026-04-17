@@ -13,40 +13,42 @@ from app.schemas.common import VehicleInfo
 from app.schemas.image_outputs import ImageAgentOutput, VehicleBoundingBox
 
 _SYSTEM_PROMPT = """You are an automotive image analysis specialist.
-Analyze the provided vehicle image and extract structured observations.
 
-Focus on:
-- Warning lights visible on the dashboard (identify each by name/symbol)
-- Visible damage (scratches, dents, rust, fluid leaks)
-- Cockpit anomalies (unusual readings, warning indicators)
-- Any other automotive-relevant observations
+STEP 1 — COUNT FOREGROUND VEHICLES FIRST (do this before anything else):
+Scan the image and count only the PROMINENT, CLEARLY VISIBLE vehicles in the foreground —
+cars that are large, close to camera, and the clear subject of the photo.
+DO NOT count: distant cars in the background, parked cars far away, blurry traffic.
+Two cars side by side as the main subjects = vehicle_count 2. One main car = 1.
+Set vehicle_count to the correct integer. DO NOT default to 1 if you see two main cars.
 
-Be precise. Do not guess what is not visible. Note image quality limitations.
+STEP 2 — BRANCH on vehicle_count:
 
-Additional rules:
-- Count distinct vehicles visible and set vehicle_count. If 0, set vehicle_detected=false.
-- If vehicle_count > 1: you MUST set needs_clarification=true, detected_make=null,
-  detected_model=null, and write ONE clarification_question describing each car by its
-  visible properties (color, position, body type). Example:
-  "Two cars detected: the red hatchback on the left or the silver SUV on the right — which one?"
-  Never write a generic "which vehicle" — always describe what you can actually see.
-  Use observations[] to briefly describe each car you see.
-  For each detected vehicle provide a bounding box in vehicle_boxes[] with normalized
-  coordinates (0.0–1.0 of image width/height). x1,y1 = top-left, x2,y2 = bottom-right.
-  Set label to a short description e.g. "Car 1 – red hatchback (left)".
-- Rate image_quality: "good"=clear and well-lit, "poor"=partially readable, "unusable"=nothing determinable.
-- If image_quality is "unusable": set confidence=0.0 and add clarification_question:
-  "The image is too blurry or dark — please take a clearer photo."
-- If image_quality is "poor": add clarification_question:
-  "Image quality is limited — a clearer photo would improve the analysis."
-- Never invent observations you cannot see.
-- If you can identify the vehicle make and model from the image, set detected_make and
-  detected_model (e.g. detected_make="BMW", detected_model="1 Series"). Only set these
-  when you are reasonably confident — leave null if uncertain.
-- Detect image orientation. If the image is rotated or tilted, set image_rotation_deg to
-  the clockwise degrees needed to make it upright (0, 90, 180, or 270). 0 = already correct.
+If vehicle_count >= 2:
+  - Set needs_clarification = true
+  - Set detected_make = null, detected_model = null
+  - Write ONE clarification_question that names each car by color + position + body type.
+    Good example: "Two cars: blue VW Golf hatchback (left) or white SEAT Leon hatchback (right)?"
+    Bad example: "Which vehicle do you mean?" (too vague — rejected)
+  - Add one observation per car describing it (color, make if visible, position)
+  - Add one vehicle_boxes entry per car with normalized coordinates (0.0–1.0):
+    x1,y1 = top-left corner of that car, x2,y2 = bottom-right corner.
+    Label: "Car 1 – blue VW Golf (left)" etc.
 
-Respond in JSON matching the ImageAnalysisResult schema."""
+If vehicle_count == 1:
+  - Analyze fully: warning lights, damage, observations
+  - Set detected_make / detected_model if you can identify the brand/model with confidence
+  - Provide a bounding box for the single car in vehicle_boxes[]
+
+If vehicle_count == 0:
+  - Set vehicle_detected = false, needs_clarification = true
+  - Add clarification_question: "No vehicle detected — please upload a car photo."
+
+STEP 3 — Additional checks:
+- image_quality: "good" = clear + well-lit | "poor" = partial | "unusable" = unreadable
+- image_rotation_deg: clockwise degrees needed to make image upright (0 / 90 / 180 / 270)
+- Never invent observations not visible in the image
+
+Respond ONLY with valid JSON matching the ImageAnalysisResult schema."""
 
 
 class _BBox(BaseModel):
@@ -108,7 +110,13 @@ async def run_image_agent(state: CarAssistantState) -> ImageAgentOutput:
         structured = llm.with_structured_output(ImageAnalysisResult, method="json_mode")
 
         content = [
-            {"type": "text", "text": "Please analyze this vehicle image."},
+            {
+                "type": "text",
+                "text": (
+                    "Count the prominent foreground vehicles first (ignore distant background cars), "
+                    "then analyze. If two or more main cars are visible, set vehicle_count and ask which one."
+                ),
+            },
             _build_image_content(image_url),
         ]
 
@@ -116,6 +124,28 @@ async def run_image_agent(state: CarAssistantState) -> ImageAgentOutput:
             SystemMessage(content=_SYSTEM_PROMPT),
             HumanMessage(content=content),
         ])
+
+        # Post-processing: detect if model underreported vehicle_count
+        # Check raw_description + observations for multi-vehicle language
+        _multi_signals = [
+            "two cars", "two vehicles", "both cars", "both vehicles",
+            "left car", "right car", "left vehicle", "right vehicle",
+            "another car", "second car", "second vehicle",
+            "on the left", "on the right",
+            "blue car", "white car", "red car",  # multiple color refs = likely multiple cars
+        ]
+        _combined_text = " ".join(
+            [result.raw_description or ""] + list(result.observations) + list(result.clarification_questions)
+        ).lower()
+        _signal_hits = sum(1 for s in _multi_signals if s in _combined_text)
+        # Also check: multiple distinct color+car patterns suggest 2 vehicles
+        _color_car_hits = sum(
+            1 for phrase in ["blue", "white", "red", "silver", "black", "green", "yellow"]
+            if phrase in _combined_text
+        )
+        if result.vehicle_count <= 1 and (_signal_hits >= 2 or _color_car_hits >= 2):
+            logger.info(f"image_agent: bumping vehicle_count 1→2 (signals={_signal_hits}, colors={_color_car_hits})")
+            result = result.model_copy(update={"vehicle_count": 2, "needs_clarification": True})
 
         clarification_questions = list(result.clarification_questions)
 
