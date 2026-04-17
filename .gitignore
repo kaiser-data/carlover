@@ -41,3 +41,4 @@ data/eval_log.jsonl
 
 # LangGraph checkpoints
 *.db
+.daytona_sandbox_id

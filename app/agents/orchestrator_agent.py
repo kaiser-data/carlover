@@ -20,39 +20,8 @@ from app.graph.state import CarAssistantState
 from app.providers.llm.model_router import get_model
 from app.schemas.common import TraceEntry, VehicleCandidate, VehicleInfo
 from app.skills.loader import get_skills_loader
-
-# Common EU/German model → brand mapping for brand-less input (e.g. "Polo" → VW)
-_MODEL_TO_BRAND: dict[str, str] = {
-    "golf": "VW", "polo": "VW", "passat": "VW", "tiguan": "VW",
-    "touareg": "VW", "arteon": "VW", "t-roc": "VW", "id.3": "VW", "id.4": "VW",
-    "a3": "Audi", "a4": "Audi", "a6": "Audi", "a8": "Audi",
-    "q3": "Audi", "q5": "Audi", "q7": "Audi",
-    "3er": "BMW", "5er": "BMW", "7er": "BMW",
-    "x1": "BMW", "x3": "BMW", "x5": "BMW",
-    "c-klasse": "Mercedes-Benz", "e-klasse": "Mercedes-Benz",
-    "a-klasse": "Mercedes-Benz", "s-klasse": "Mercedes-Benz",
-    "gle": "Mercedes-Benz", "glc": "Mercedes-Benz", "gla": "Mercedes-Benz",
-    "corsa": "Opel", "astra": "Opel", "insignia": "Opel", "mokka": "Opel",
-    "fiesta": "Ford", "focus": "Ford", "kuga": "Ford", "puma": "Ford",
-    "clio": "Renault", "megane": "Renault", "kadjar": "Renault", "captur": "Renault",
-    "208": "Peugeot", "308": "Peugeot", "3008": "Peugeot", "5008": "Peugeot",
-    "yaris": "Toyota", "corolla": "Toyota", "rav4": "Toyota", "camry": "Toyota",
-    "civic": "Honda", "cr-v": "Honda", "jazz": "Honda",
-    "octavia": "Škoda", "fabia": "Škoda", "superb": "Škoda", "karoq": "Škoda",
-    "leon": "Seat", "ibiza": "Seat", "ateca": "Seat",
-    "i20": "Hyundai", "i30": "Hyundai", "tucson": "Hyundai", "kona": "Hyundai",
-    "ceed": "Kia", "sportage": "Kia", "stonic": "Kia",
-    "qashqai": "Nissan", "juke": "Nissan", "leaf": "Nissan",
-    "cx-5": "Mazda", "mazda3": "Mazda", "mazda6": "Mazda",
-    "xc60": "Volvo", "xc90": "Volvo", "v60": "Volvo",
-    "500": "Fiat", "punto": "Fiat", "tipo": "Fiat",
-}
-
-_KNOWN_MAKES = [
-    "VW", "Volkswagen", "BMW", "Mercedes-Benz", "Mercedes", "Audi",
-    "Opel", "Ford", "Renault", "Peugeot", "Toyota", "Honda", "Škoda",
-    "Seat", "Hyundai", "Kia", "Nissan", "Mazda", "Volvo", "Fiat",
-]
+from app.utils.vehicle_normalizer import KNOWN_MAKES as _KNOWN_MAKES
+from app.utils.vehicle_normalizer import MODEL_TO_BRAND as _MODEL_TO_BRAND
 
 
 def _normalize_vehicle_candidate(candidate: VehicleCandidate) -> VehicleCandidate:

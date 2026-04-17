@@ -48,9 +48,17 @@ _HEADERS = {
 }
 _CACHE_TTL = 86_400  # 24 hours in seconds
 _REQUEST_DELAY = 1.0  # seconds between requests
+_CACHE_MAX_SIZE = 200  # evict oldest entries when exceeded
 
 # In-memory cache: slug → (timestamp, rangePage_dict, page_url)
 _cache: dict[str, tuple[float, dict, str]] = {}
+
+
+def _cache_set(key: str, value: tuple[float, dict, str]) -> None:
+    if len(_cache) >= _CACHE_MAX_SIZE:
+        oldest = min(_cache, key=lambda k: _cache[k][0])
+        del _cache[oldest]
+    _cache[key] = value
 
 
 def _slugify(text: str) -> str:
@@ -377,7 +385,7 @@ async def _fetch_page(brand_slug: str, model_slug: str) -> Optional[tuple[dict, 
             logger.warning(f"ADAC: no rangePage in hydration data at {url}")
             return None
 
-        _cache[cache_key] = (now, rp, url)
+        _cache_set(cache_key, (now, rp, url))
         return rp, url
 
     except Exception as exc:

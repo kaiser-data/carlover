@@ -11,8 +11,8 @@ from app.schemas.common import VehicleInfo
 def _get_adac_provider() -> ADACBaseProvider:
     settings = get_settings()
     if settings.ADAC_PROVIDER == "real":
-        # TODO: Import and return RealADACProvider() when implemented
-        raise NotImplementedError("Real ADAC provider not yet implemented. Set ADAC_PROVIDER=mock.")
+        from app.providers.adac.real_provider import RealADACProvider
+        return RealADACProvider()
     return MockADACProvider()
 
 

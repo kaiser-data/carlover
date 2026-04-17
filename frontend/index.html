@@ -3,799 +3,1034 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Carlover — API Tester</title>
+<title>CarLover — AI Car Assistant</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #0f1117;
-    --surface: #1a1d2e;
-    --surface2: #222538;
-    --border: #2e3150;
-    --accent: #6366f1;
-    --accent-hover: #818cf8;
-    --text: #e2e8f0;
-    --muted: #8892a4;
-    --success: #22c55e;
-    --warn: #f59e0b;
-    --error: #ef4444;
-    --radius: 10px;
+    --bg:       #0a0c14;
+    --surface:  #111420;
+    --surface2: #181c2e;
+    --border:   #1e2440;
+    --accent:   #6366f1;
+    --accent2:  #818cf8;
+    --pink:     #e5222a;
+    --text:     #e2e8f0;
+    --muted:    #64748b;
+    --green:    #22c55e;
+    --amber:    #f59e0b;
+    --red:      #ef4444;
+    --r:        12px;
   }
+
+  html { scroll-behavior: smooth; }
 
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: 'Inter', -apple-system, sans-serif;
     font-size: 14px;
     min-height: 100vh;
   }
 
+  /* ── Header ── */
   header {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
-    padding: 14px 24px;
+    padding: 0 28px;
+    height: 56px;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
   }
-
-  header h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
-  header h1 span { color: var(--accent); }
+  .logo { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; }
+  .logo span { color: var(--accent); }
+  .logo em { font-style: normal; color: var(--pink); font-size: 11px; font-weight: 600; background: rgba(229,34,42,0.12); padding: 2px 7px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
 
   #health-badge {
     margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: var(--muted);
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--muted);
   }
+  #health-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); transition: background .3s; }
+  #health-dot.ok  { background: var(--green); }
+  #health-dot.err { background: var(--red); }
 
-  #health-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--muted);
-    transition: background 0.3s;
-  }
-  #health-dot.ok { background: var(--success); }
-  #health-dot.err { background: var(--error); }
-
-  .layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 20px;
-    padding: 20px 24px;
-    max-width: 1600px;
-    margin: 0 auto;
-  }
-
-  @media (max-width: 1200px) {
-    .layout { grid-template-columns: 1fr 1fr; }
-  }
-
-  @media (max-width: 700px) {
-    .layout { grid-template-columns: 1fr; }
-  }
-
-  .card {
+  .api-bar {
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-  }
-
-  .card-header {
-    padding: 14px 18px;
     border-bottom: 1px solid var(--border);
+    padding: 6px 28px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-weight: 600;
-    font-size: 13px;
-    letter-spacing: 0.3px;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  .card-header svg { opacity: 0.7; }
-
-  .card-body { padding: 18px; display: flex; flex-direction: column; gap: 12px; }
-
-  label {
-    display: block;
+    gap: 8px;
     font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 5px;
-    font-weight: 500;
   }
-
-  textarea, input[type="text"], input[type="url"] {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    color: var(--text);
-    padding: 10px 12px;
-    font-size: 13px;
-    font-family: inherit;
-    outline: none;
-    resize: vertical;
-    transition: border-color 0.15s;
+  .api-bar label { color: var(--muted); white-space: nowrap; }
+  .api-bar input {
+    flex: 1; max-width: 360px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text);
+    padding: 4px 10px; font-size: 12px; outline: none;
   }
+  .api-bar input:focus { border-color: var(--accent); }
 
-  textarea:focus, input:focus {
-    border-color: var(--accent);
-  }
-
-  textarea { min-height: 90px; }
-
-  .row { display: flex; gap: 10px; }
-  .row > * { flex: 1; }
-
-  button {
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: 7px;
-    padding: 10px 18px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s;
+  /* ── Main layout ── */
+  .main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 24px 64px;
     display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  /* ── Hero upload zone ── */
+  .hero {
+    background: linear-gradient(135deg, var(--surface) 0%, #13172a 100%);
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 36px;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
+    gap: 24px;
   }
-
-  button:hover { background: var(--accent-hover); }
-  button:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  button.secondary {
-    background: var(--surface2);
-    color: var(--muted);
-    border: 1px solid var(--border);
-  }
-  button.secondary:hover { color: var(--text); border-color: var(--accent); }
+  .hero-title { font-size: 28px; font-weight: 900; letter-spacing: -0.5px; text-align: center; }
+  .hero-title span { color: var(--accent); }
+  .hero-sub { font-size: 15px; color: var(--muted); text-align: center; max-width: 500px; line-height: 1.6; }
 
   .drop-zone {
+    width: 100%; max-width: 540px;
     border: 2px dashed var(--border);
-    border-radius: 7px;
-    padding: 24px;
+    border-radius: 16px;
+    padding: 40px 24px;
     text-align: center;
-    color: var(--muted);
-    font-size: 13px;
     cursor: pointer;
-    transition: border-color 0.15s, background 0.15s;
+    transition: border-color .2s, background .2s;
+    position: relative;
   }
   .drop-zone:hover, .drop-zone.drag-over {
     border-color: var(--accent);
     background: rgba(99,102,241,0.05);
   }
   .drop-zone input[type="file"] { display: none; }
+  .drop-icon { font-size: 40px; margin-bottom: 12px; }
+  .drop-text { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .drop-hint { font-size: 12px; color: var(--muted); }
 
-  .drop-zone-preview {
-    margin-top: 10px;
-    display: flex;
+  .drop-preview {
+    display: none;
+    flex-direction: column;
     align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    color: var(--text);
+    gap: 10px;
   }
-  .drop-zone-preview img {
-    width: 48px; height: 48px;
-    object-fit: cover;
-    border-radius: 5px;
+  .drop-preview.visible { display: flex; }
+  .drop-preview img {
+    max-height: 200px; max-width: 100%;
+    border-radius: 10px;
     border: 1px solid var(--border);
+    object-fit: contain;
+  }
+  .drop-preview-name { font-size: 12px; color: var(--muted); }
+  .drop-preview-change {
+    font-size: 12px; color: var(--accent); cursor: pointer;
+    text-decoration: underline;
   }
 
-  .result-area {
+  .or-divider {
+    display: flex; align-items: center; gap: 12px;
+    width: 100%; max-width: 540px;
+    color: var(--muted); font-size: 12px;
+  }
+  .or-divider::before, .or-divider::after {
+    content: ''; flex: 1;
+    height: 1px; background: var(--border);
+  }
+
+  .url-row {
+    width: 100%; max-width: 540px;
+    display: flex; gap: 8px;
+  }
+  .url-row input {
+    flex: 1;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text);
+    padding: 10px 14px; font-size: 13px; outline: none;
+    font-family: inherit;
+  }
+  .url-row input:focus { border-color: var(--accent); }
+
+  .context-row {
+    width: 100%; max-width: 540px;
+  }
+  .context-row input {
+    width: 100%;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text);
+    padding: 10px 14px; font-size: 13px; outline: none;
+    font-family: inherit;
+  }
+  .context-row input:focus { border-color: var(--accent); }
+
+  .analyze-btn {
+    width: 100%; max-width: 540px;
+    background: var(--accent);
+    color: white; border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 15px; font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: background .15s, transform .1s;
+  }
+  .analyze-btn:hover { background: var(--accent2); }
+  .analyze-btn:active { transform: scale(0.99); }
+  .analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* ── Pipeline steps (shown while loading) ── */
+  .pipeline {
+    display: none;
+    width: 100%; max-width: 540px;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .pipeline.visible { display: flex; }
+  .pipeline-step {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
     background: var(--surface2);
     border: 1px solid var(--border);
-    border-radius: 7px;
-    padding: 14px;
-    min-height: 120px;
-    font-size: 12px;
-    display: none;
-  }
-  .result-area.visible { display: block; }
-
-  .answer-box {
-    background: rgba(99,102,241,0.08);
-    border: 1px solid rgba(99,102,241,0.25);
-    border-radius: 7px;
-    padding: 12px 14px;
+    border-radius: 8px;
     font-size: 13px;
-    line-height: 1.6;
-    white-space: pre-wrap;
-    word-break: break-word;
+    transition: border-color .3s;
+  }
+  .pipeline-step.active { border-color: var(--accent); }
+  .pipeline-step.done   { border-color: rgba(34,197,94,.3); }
+  .pipeline-step .ps-icon { font-size: 18px; width: 24px; text-align: center; flex-shrink: 0; }
+  .pipeline-step .ps-label { font-weight: 600; }
+  .pipeline-step .ps-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .step-dot {
+    margin-left: auto; width: 8px; height: 8px;
+    border-radius: 50%; background: var(--border); flex-shrink: 0;
+    transition: background .3s;
+  }
+  .pipeline-step.active .step-dot { background: var(--accent); animation: pulse 1s infinite; }
+  .pipeline-step.done   .step-dot { background: var(--green); animation: none; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  /* ── Results section ── */
+  .results { display: none; flex-direction: column; gap: 20px; }
+  .results.visible { display: flex; }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 700px) { .result-grid { grid-template-columns: 1fr; } }
+
+  .result-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .result-card.span2 { grid-column: span 2; }
+  @media (max-width: 700px) { .result-card.span2 { grid-column: span 1; } }
+
+  .rc-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .5px;
+    color: var(--muted);
+  }
+  .rc-icon { font-size: 16px; }
+  .rc-body { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+
+  .vehicle-detected {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px;
+    background: rgba(99,102,241,.08);
+    border: 1px solid rgba(99,102,241,.2);
+    border-radius: 10px;
+  }
+  .vehicle-img {
+    width: 80px; height: 56px;
+    object-fit: cover; border-radius: 6px;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .vehicle-name { font-size: 17px; font-weight: 800; }
+  .vehicle-sub  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .observation { font-size: 13px; color: var(--text); line-height: 1.5; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .observation:last-child { border-bottom: none; }
+
+  .warning-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.25);
+    color: var(--red); padding: 4px 10px; border-radius: 6px;
+    font-size: 12px; font-weight: 600; margin: 3px 3px 0 0;
   }
 
-  .meta-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 10px;
+  .reliability-year {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .reliability-year:last-child { border-bottom: none; }
+  .ry-year { font-size: 13px; font-weight: 700; width: 38px; flex-shrink: 0; }
+  .ry-bar-wrap { flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .ry-bar { height: 100%; border-radius: 3px; transition: width .6s; }
+  .ry-val { font-size: 12px; color: var(--muted); width: 50px; text-align: right; flex-shrink: 0; }
+  .ry-rating { font-size: 11px; font-weight: 700; width: 56px; text-align: right; flex-shrink: 0; }
+
+  .issue-item {
+    padding: 8px 0; border-bottom: 1px solid var(--border);
+    font-size: 13px; line-height: 1.5;
+  }
+  .issue-item:last-child { border-bottom: none; }
+  .issue-system {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .5px; color: var(--accent); margin-bottom: 3px;
   }
 
   .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 500;
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 9px; border-radius: 5px;
+    font-size: 11px; font-weight: 600;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .badge.green { background: rgba(34,197,94,.1); border-color: rgba(34,197,94,.3); color: var(--green); }
+  .badge.amber { background: rgba(245,158,11,.1); border-color: rgba(245,158,11,.3); color: var(--amber); }
+  .badge.red   { background: rgba(239,68,68,.1);  border-color: rgba(239,68,68,.25); color: var(--red); }
+  .badge.indigo { background: rgba(99,102,241,.1); border-color: rgba(99,102,241,.25); color: var(--accent2); }
+
+  .adac-attr {
+    font-size: 11px; color: var(--muted);
+    border-top: 1px solid var(--border); padding-top: 10px; margin-top: 4px;
+  }
+  .adac-attr a { color: var(--accent2); text-decoration: none; }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .5px; color: var(--muted); margin-bottom: 4px;
+  }
+
+  /* ── Manual sections ── */
+  .tools-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 700px) { .tools-grid { grid-template-columns: 1fr; } }
+
+  .tool-card {
     background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .tc-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .5px;
+    color: var(--muted);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .tc-body { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+
+  input[type="text"], input[type="url"], textarea {
+    width: 100%;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text);
+    padding: 9px 12px; font-size: 13px;
+    outline: none; font-family: inherit;
+    transition: border-color .15s;
+  }
+  input:focus, textarea:focus { border-color: var(--accent); }
+  textarea { min-height: 80px; resize: vertical; }
+
+  .input-row { display: flex; gap: 8px; }
+  .input-row > * { flex: 1; }
+
+  .btn {
+    background: var(--accent); color: white; border: none;
+    border-radius: 8px; padding: 10px 18px;
+    font-size: 13px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center;
+    justify-content: center; gap: 6px;
+    transition: background .15s;
+    font-family: inherit;
+  }
+  .btn:hover { background: var(--accent2); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn.sm { padding: 6px 12px; font-size: 12px; }
+  .btn.ghost {
+    background: var(--surface2); color: var(--muted);
     border: 1px solid var(--border);
-    color: var(--muted);
   }
-  .badge.green { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.3); color: var(--success); }
-  .badge.amber { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.3); color: var(--warn); }
-  .badge.red { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: var(--error); }
+  .btn.ghost:hover { color: var(--text); border-color: var(--accent); }
 
-  .section-title {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--muted);
-    margin-bottom: 6px;
-    margin-top: 12px;
+  .tool-result {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px;
+    font-size: 12px; display: none;
+    max-height: 320px; overflow-y: auto;
   }
-
-  .clarification-box {
-    background: rgba(245,158,11,0.08);
-    border: 1px solid rgba(245,158,11,0.3);
-    border-radius: 7px;
-    padding: 10px 12px;
-    font-size: 12px;
-    color: var(--warn);
-  }
-
-  .sources-list, .observations-list, .findings-list {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .source-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: var(--muted);
-  }
-
-  .raw-json {
-    font-family: "SF Mono", "Fira Code", monospace;
-    font-size: 11px;
-    white-space: pre;
-    overflow-x: auto;
-    color: var(--muted);
-    margin-top: 6px;
-    max-height: 200px;
-    overflow-y: auto;
-  }
+  .tool-result.visible { display: block; }
 
   .spinner {
     width: 14px; height: 14px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
+    border: 2px solid rgba(255,255,255,.3);
+    border-top-color: white; border-radius: 50%;
+    animation: spin .6s linear infinite;
   }
-
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  .tabs {
-    display: flex;
-    gap: 2px;
-    padding: 0 18px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-  }
-
-  .tab {
-    padding: 10px 14px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--muted);
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: color 0.15s, border-color 0.15s;
-    margin-bottom: -1px;
-  }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-  .tab-panel { display: none; }
-  .tab-panel.active { display: flex; flex-direction: column; gap: 12px; padding: 18px; }
-
-  .conf-bar {
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-top: 4px;
-  }
-  .conf-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 0.4s;
-  }
-
-  .image-preview-large {
-    width: 100%;
-    max-height: 200px;
-    object-fit: contain;
-    border-radius: 7px;
-    border: 1px solid var(--border);
-    background: var(--surface2);
-    display: none;
-  }
-  .image-preview-large.visible { display: block; }
-
-  .warning-light-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    background: rgba(239,68,68,0.1);
-    border: 1px solid rgba(239,68,68,0.3);
-    color: var(--error);
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 500;
-  }
-
-  .quality-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 500;
-  }
-  .quality-good { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: var(--success); }
-  .quality-poor { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: var(--warn); }
-  .quality-unusable { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: var(--error); }
-
-  .api-url-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 24px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    font-size: 12px;
-  }
-  .api-url-bar label { color: var(--muted); white-space: nowrap; }
-  .api-url-bar input {
-    flex: 1;
-    max-width: 340px;
-    padding: 5px 10px;
-    font-size: 12px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    color: var(--text);
-  }
-
   details summary {
-    cursor: pointer;
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 8px;
-    user-select: none;
+    font-size: 11px; color: var(--muted);
+    cursor: pointer; user-select: none; margin-top: 6px;
   }
   details summary:hover { color: var(--text); }
+  pre { font-size: 11px; white-space: pre-wrap; word-break: break-all; }
+
+  hr.section-divider {
+    border: none; border-top: 1px solid var(--border);
+    margin: 8px 0;
+  }
+
+  .empty-state { text-align: center; padding: 24px; color: var(--muted); font-size: 13px; }
+
+  /* ── Suggested questions ── */
+  .suggestions-box {
+    background: linear-gradient(135deg, var(--surface) 0%, #13172a 100%);
+    border: 1.5px solid rgba(99,102,241,.3);
+    border-radius: 16px;
+    padding: 20px 24px;
+  }
+  .suggestions-label {
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .5px;
+    color: var(--accent2); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .suggestions-chips {
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .suggestion-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    transition: border-color .15s, background .15s, color .15s;
+    font-family: inherit;
+  }
+  .suggestion-chip:hover {
+    border-color: var(--accent);
+    background: rgba(99,102,241,.1);
+    color: var(--accent2);
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <path d="M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v5"/>
-    <path d="M14 17a2 2 0 100 4 2 2 0 000-4zm7 0a2 2 0 100 4 2 2 0 000-4z"/>
-    <path d="M12 17h3m4 0h2"/>
-  </svg>
-  <h1>Car<span>lover</span> — API Tester</h1>
-
+  <span style="font-size:22px;">🚗</span>
+  <div class="logo">Car<span>Lover</span> <em>AI</em></div>
   <div id="health-badge">
     <div id="health-dot"></div>
-    <span id="health-text">checking…</span>
+    <span id="health-text">connecting…</span>
   </div>
 </header>
 
-<div class="api-url-bar">
-  <label for="api-base">API base:</label>
-  <input id="api-base" type="text" value="" placeholder="http://localhost:8000" />
-  <button class="secondary" onclick="checkHealth()" style="padding:5px 12px;font-size:12px;">
-    Ping
-  </button>
+<div class="api-bar">
+  <label>API:</label>
+  <input id="api-base" type="text" placeholder="http://localhost:8000" />
+  <button class="btn sm ghost" onclick="checkHealth()">Ping</button>
 </div>
 
-<div class="layout">
+<div class="main">
 
-  <!-- ── CHAT ── -->
-  <div class="card">
-    <div class="card-header">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-      </svg>
-      Chat — POST /chat
-    </div>
+  <!-- ── HERO: Photo upload ── -->
+  <div class="hero">
+    <div class="hero-title">Upload a photo — get <span>full AI analysis</span></div>
+    <div class="hero-sub">Photo triggers image analysis, ADAC reliability lookup, and a complete diagnosis — all in parallel.</div>
 
-    <div class="tabs">
-      <div class="tab active" onclick="switchTab('chat','basic')">Basic</div>
-      <div class="tab" onclick="switchTab('chat','vehicle')">+ Vehicle</div>
-      <div class="tab" onclick="switchTab('chat','image')">+ Image</div>
-    </div>
-
-    <div id="chat-tab-basic" class="tab-panel active">
-      <label for="chat-query">Query</label>
-      <textarea id="chat-query" placeholder="My Golf 7 makes a grinding noise when braking…" rows="4"></textarea>
-    </div>
-
-    <div id="chat-tab-vehicle" class="tab-panel">
-      <label for="chat-query-v">Query</label>
-      <textarea id="chat-query-v" placeholder="My car makes a grinding noise when braking…" rows="3"></textarea>
-      <div class="row">
-        <div>
-          <label>Make</label>
-          <input id="v-make" type="text" placeholder="VW" />
-        </div>
-        <div>
-          <label>Model</label>
-          <input id="v-model" type="text" placeholder="Golf" />
-        </div>
-        <div>
-          <label>Year</label>
-          <input id="v-year" type="text" placeholder="2019" />
-        </div>
+    <!-- Drop zone -->
+    <div class="drop-zone" id="drop-zone"
+         onclick="document.getElementById('file-input').click()"
+         ondragover="handleDragOver(event)"
+         ondragleave="handleDragLeave(event)"
+         ondrop="handleDrop(event)">
+      <input type="file" id="file-input" accept="image/*" onchange="handleFileSelect(event)" />
+      <div id="drop-empty">
+        <div class="drop-icon">📸</div>
+        <div class="drop-text">Drop your car photo here</div>
+        <div class="drop-hint">Dashboard · damage · warning lights · any angle</div>
       </div>
-      <div>
-        <label>Variant (optional)</label>
-        <input id="v-variant" type="text" placeholder="GTI" />
+      <div class="drop-preview" id="drop-preview">
+        <img id="drop-thumb" src="" alt="" />
+        <div class="drop-preview-name" id="drop-filename"></div>
+        <div class="drop-preview-change" onclick="clearPhoto(event)">Change photo</div>
       </div>
     </div>
 
-    <div id="chat-tab-image" class="tab-panel">
-      <label for="chat-query-i">Query</label>
-      <textarea id="chat-query-i" placeholder="What's wrong with my dashboard?" rows="3"></textarea>
-      <label>Image URL</label>
-      <input id="chat-image-url" type="url" placeholder="https://… or leave blank to use Image Analyzer" />
+    <div class="or-divider">or paste a URL</div>
+
+    <div class="url-row">
+      <input id="hero-url" type="url" placeholder="https://example.com/my-car.jpg" oninput="clearFileSelection()" />
     </div>
 
-    <div style="padding:0 18px 18px;">
-      <button id="chat-btn" onclick="sendChat()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-        </svg>
-        Send
-      </button>
+    <div class="context-row">
+      <input id="hero-context" type="text" placeholder="Optional: describe the issue — e.g. 'engine light on'" />
     </div>
 
-    <div id="chat-result" class="result-area" style="margin:0 18px 18px;"></div>
-  </div>
+    <button class="analyze-btn" id="analyze-btn" onclick="runFullAnalysis()">
+      <span>🔍</span> Analyze My Car
+    </button>
 
-  <!-- ── VEHICLE LOOKUP ── -->
-  <div class="card">
-    <div class="card-header">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      Vehicle Lookup — POST /vehicle/lookup
-    </div>
-
-    <div style="padding:18px;display:flex;flex-direction:column;gap:12px;">
-      <div style="font-size:12px;color:var(--muted);">
-        Typos and missing make are OK — e.g. <em>"Gollf"</em>, <em>"Polo"</em> without a brand.
+    <!-- Pipeline progress -->
+    <div class="pipeline" id="pipeline">
+      <div class="pipeline-step" id="step-image">
+        <span class="ps-icon">📷</span>
+        <div><div class="ps-label">Image Agent</div><div class="ps-sub">Analyzing photo with Qwen3-VL vision model</div></div>
+        <div class="step-dot"></div>
       </div>
-
-      <div class="row">
-        <div>
-          <label>Make (optional)</label>
-          <input id="vl-make" type="text" placeholder="VW, BMW, Vollkswagen…" />
-        </div>
-        <div>
-          <label>Model *</label>
-          <input id="vl-model" type="text" placeholder="Golf, Gollf, 3er…" />
-        </div>
-        <div>
-          <label>Year (optional)</label>
-          <input id="vl-year" type="text" placeholder="2019" />
-        </div>
+      <div class="pipeline-step" id="step-adac">
+        <span class="ps-icon">📊</span>
+        <div><div class="ps-label">ADAC Agent</div><div class="ps-sub">Fetching real reliability data from adac.de</div></div>
+        <div class="step-dot"></div>
       </div>
-
-      <button id="vl-btn" onclick="sendVehicleLookup()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-        Lookup
-      </button>
-
-      <div id="vl-result" class="result-area"></div>
+      <div class="pipeline-step" id="step-db">
+        <span class="ps-icon">🗄️</span>
+        <div><div class="ps-label">Database Agent</div><div class="ps-sub">Checking service history in Supabase</div></div>
+        <div class="step-dot"></div>
+      </div>
+      <div class="pipeline-step" id="step-answer">
+        <span class="ps-icon">✍️</span>
+        <div><div class="ps-label">Answer Agent</div><div class="ps-sub">Synthesizing results into your diagnosis</div></div>
+        <div class="step-dot"></div>
+      </div>
     </div>
   </div>
 
-  <!-- ── IMAGE ANALYSIS ── -->
-  <div class="card">
-    <div class="card-header">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
-        <polyline points="21 15 16 10 5 21"/>
-      </svg>
-      Image Analysis — POST /image/analyze
+  <!-- ── RESULTS ── -->
+  <div class="results" id="results">
+
+    <div class="result-grid">
+
+      <!-- Vehicle detected -->
+      <div class="result-card" id="rc-vehicle" style="display:none">
+        <div class="rc-header"><span class="rc-icon">🚗</span> Vehicle Identified</div>
+        <div class="rc-body" id="rc-vehicle-body"></div>
+      </div>
+
+      <!-- Image observations -->
+      <div class="result-card" id="rc-image" style="display:none">
+        <div class="rc-header"><span class="rc-icon">📷</span> Visual Analysis</div>
+        <div class="rc-body" id="rc-image-body"></div>
+      </div>
+
+      <!-- ADAC reliability -->
+      <div class="result-card span2" id="rc-adac" style="display:none">
+        <div class="rc-header"><span class="rc-icon">📊</span> ADAC Reliability Data</div>
+        <div class="rc-body" id="rc-adac-body"></div>
+      </div>
+
+      <!-- Diagnosis -->
+      <div class="result-card span2" id="rc-answer" style="display:none">
+        <div class="rc-header"><span class="rc-icon">✍️</span> AI Diagnosis</div>
+        <div class="rc-body" id="rc-answer-body"></div>
+      </div>
+
     </div>
 
-    <div style="padding:18px;display:flex;flex-direction:column;gap:12px;">
+    <!-- Suggested questions -->
+    <div class="suggestions-box" id="suggestions-box" style="display:none">
+      <div class="suggestions-label">💬 Ask a follow-up question</div>
+      <div class="suggestions-chips" id="suggestions-chips"></div>
+    </div>
 
-      <label>Image source</label>
-      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()"
-           ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
-        <input type="file" id="file-input" accept="image/*" onchange="handleFileSelect(event)" />
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 8px;display:block;opacity:0.5">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
-        <span>Drop an image here or click to upload</span>
-        <div id="file-name" class="drop-zone-preview" style="display:none;justify-content:center;">
-          <img id="file-thumb" src="" alt="" />
-          <span id="file-label"></span>
+  </div>
+
+  <!-- ── MANUAL TOOLS ── -->
+  <div>
+    <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;">Manual Tools</div>
+    <div class="tools-grid">
+
+      <!-- Vehicle Lookup -->
+      <div class="tool-card">
+        <div class="tc-header"><span>🔎</span> Vehicle Lookup</div>
+        <div class="tc-body">
+          <div style="font-size:12px;color:var(--muted);">Typos OK — try "Gollf", "Polo" without brand, "BMW 2er" in model field.</div>
+          <div class="input-row">
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Make (optional)</div>
+              <input id="vl-make" type="text" placeholder="VW, BMW…" />
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Model *</div>
+              <input id="vl-model" type="text" placeholder="Golf, 3er…" />
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Year</div>
+              <input id="vl-year" type="text" placeholder="2020" />
+            </div>
+          </div>
+          <button class="btn" id="vl-btn" onclick="sendVehicleLookup()">
+            <span>🔍</span> Lookup
+          </button>
+          <div class="tool-result" id="vl-result"></div>
         </div>
       </div>
 
-      <div style="text-align:center;font-size:12px;color:var(--muted);">— or use a URL —</div>
-
-      <div>
-        <label>Image URL</label>
-        <input id="img-url" type="url" placeholder="https://example.com/car.jpg" oninput="clearFileSelection()" />
+      <!-- Chat -->
+      <div class="tool-card">
+        <div class="tc-header"><span>💬</span> Chat</div>
+        <div class="tc-body">
+          <textarea id="chat-query" placeholder="My VW Golf 7 2019 makes a grinding noise when braking…" rows="3"></textarea>
+          <button class="btn" id="chat-btn" onclick="sendChat()">
+            <span>→</span> Ask
+          </button>
+          <div class="tool-result" id="chat-result"></div>
+        </div>
       </div>
 
-      <img id="img-preview" class="image-preview-large" src="" alt="preview" />
-
-      <div>
-        <label>Context hint (optional)</label>
-        <input id="img-context" type="text" placeholder="dashboard warning lights" />
-      </div>
-
-      <button id="img-btn" onclick="sendImageAnalysis()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-        Analyze
-      </button>
-
-      <div id="img-result" class="result-area"></div>
     </div>
   </div>
 
 </div>
 
 <script>
-// ──────────────────────────────────────────────
-// Helpers
-// ──────────────────────────────────────────────
-
+// ── API base ──
 function apiBase() {
-  const v = document.getElementById('api-base').value.trim();
-  return v || window.location.origin;
+  return document.getElementById('api-base').value.trim() || window.location.origin;
 }
 
-function setLoading(btnId, yes) {
-  const btn = document.getElementById(btnId);
-  if (yes) {
-    btn._orig = btn.innerHTML;
-    btn.innerHTML = '<div class="spinner"></div> Working…';
-    btn.disabled = true;
-  } else {
-    btn.innerHTML = btn._orig || btn.innerHTML;
-    btn.disabled = false;
-  }
-}
-
-function showResult(id, html) {
-  const el = document.getElementById(id);
-  el.innerHTML = html;
-  el.classList.add('visible');
-}
-
-function confColor(c) {
-  if (c >= 0.75) return 'var(--success)';
-  if (c >= 0.45) return 'var(--warn)';
-  return 'var(--error)';
-}
-
-function confClass(c) {
-  if (c >= 0.75) return 'green';
-  if (c >= 0.45) return 'amber';
-  return 'red';
-}
-
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function qualityClass(q) {
-  if (q === 'good') return 'quality-good';
-  if (q === 'poor') return 'quality-poor';
-  return 'quality-unusable';
-}
-
-// ──────────────────────────────────────────────
-// Health check
-// ──────────────────────────────────────────────
-
+// ── Health check ──
 async function checkHealth() {
   const dot = document.getElementById('health-dot');
   const txt = document.getElementById('health-text');
   dot.className = '';
-  txt.textContent = 'checking…';
   try {
     const r = await fetch(apiBase() + '/health', { credentials: 'include' });
     const d = await r.json();
     dot.className = 'ok';
-    txt.textContent = `v${d.version} — ok`;
-  } catch(e) {
+    txt.textContent = 'online · v' + d.version;
+  } catch {
     dot.className = 'err';
-    txt.textContent = 'unreachable';
+    txt.textContent = 'offline';
   }
 }
 
-// Auto-detect API base from current origin or localhost
-(function initApiBase() {
+// ── Init API base ──
+(function() {
   const stored = localStorage.getItem('carlover-api-base');
   const input = document.getElementById('api-base');
   if (stored) {
     input.value = stored;
-  } else if (window.location.hostname !== '' && window.location.origin !== 'null') {
+  } else if (window.location.hostname && window.location.origin !== 'null') {
     input.value = window.location.origin;
   } else {
     input.value = 'http://localhost:8000';
   }
-  input.addEventListener('change', () => {
-    localStorage.setItem('carlover-api-base', input.value.trim());
-  });
+  input.addEventListener('change', () => localStorage.setItem('carlover-api-base', input.value.trim()));
   checkHealth();
 })();
 
-// ──────────────────────────────────────────────
-// Tab switching
-// ──────────────────────────────────────────────
+// ── File handling ──
+let _fileDataUrl = null;
 
-let _activeTab = { chat: 'basic' };
+function handleDragOver(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('drag-over'); }
+function handleDragLeave(e) { document.getElementById('drop-zone').classList.remove('drag-over'); }
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('drag-over');
+  const file = e.dataTransfer?.files?.[0];
+  if (file && file.type.startsWith('image/')) processFile(file);
+}
+function handleFileSelect(e) {
+  const file = e.target.files?.[0];
+  if (file) processFile(file);
+}
+function processFile(file) {
+  document.getElementById('hero-url').value = '';
+  const reader = new FileReader();
+  reader.onload = ev => {
+    _fileDataUrl = ev.target.result;
+    document.getElementById('drop-thumb').src = _fileDataUrl;
+    document.getElementById('drop-filename').textContent = file.name + ' (' + (file.size/1024).toFixed(0) + ' KB)';
+    document.getElementById('drop-empty').style.display = 'none';
+    document.getElementById('drop-preview').classList.add('visible');
+  };
+  reader.readAsDataURL(file);
+}
+function clearPhoto(e) {
+  e.stopPropagation();
+  _fileDataUrl = null;
+  document.getElementById('drop-empty').style.display = '';
+  document.getElementById('drop-preview').classList.remove('visible');
+  document.getElementById('file-input').value = '';
+}
+function clearFileSelection() { _fileDataUrl = null; }
 
-function switchTab(card, tab) {
-  _activeTab[card] = tab;
-  const container = document.querySelector(`#chat-tab-${tab}`).closest('.card');
-  container.querySelectorAll('.tab').forEach((el, i) => {
-    const tabs = ['basic','vehicle','image'];
-    el.classList.toggle('active', tabs[i] === tab);
+// ── Pipeline step helpers ──
+function stepActive(id) {
+  document.getElementById(id).classList.remove('done');
+  document.getElementById(id).classList.add('active');
+}
+function stepDone(id) {
+  document.getElementById(id).classList.remove('active');
+  document.getElementById(id).classList.add('done');
+}
+function resetSteps() {
+  ['step-image','step-adac','step-db','step-answer'].forEach(id => {
+    document.getElementById(id).classList.remove('active','done');
   });
-  container.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
-  document.getElementById(`chat-tab-${tab}`).classList.add('active');
 }
 
-// ──────────────────────────────────────────────
-// Chat
-// ──────────────────────────────────────────────
-
-async function sendChat() {
-  const tab = _activeTab.chat || 'basic';
-  let query = '';
-  let body = {};
-
-  if (tab === 'basic') {
-    query = document.getElementById('chat-query').value.trim();
-  } else if (tab === 'vehicle') {
-    query = document.getElementById('chat-query-v').value.trim();
-    const make = document.getElementById('v-make').value.trim();
-    const model = document.getElementById('v-model').value.trim();
-    const year = parseInt(document.getElementById('v-year').value);
-    const variant = document.getElementById('v-variant').value.trim();
-    if (make || model) {
-      body.vehicle = { make, model, year: isNaN(year) ? null : year, variant: variant || null };
-    }
-  } else if (tab === 'image') {
-    query = document.getElementById('chat-query-i').value.trim();
-    const imgUrl = document.getElementById('chat-image-url').value.trim();
-    if (imgUrl) body.image_url = imgUrl;
+// ── Full analysis (hero) ──
+async function runFullAnalysis() {
+  const heroUrl = document.getElementById('hero-url').value.trim();
+  if (!_fileDataUrl && !heroUrl) {
+    alert('Please upload a photo or paste an image URL first.');
+    return;
   }
 
-  if (!query) { alert('Please enter a query.'); return; }
-  body.query = query;
+  const btn = document.getElementById('analyze-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Analyzing…';
 
-  setLoading('chat-btn', true);
+  document.getElementById('pipeline').classList.add('visible');
+  document.getElementById('results').classList.remove('visible');
+  resetSteps();
+
+  // Hide all result cards and suggestions
+  ['rc-vehicle','rc-image','rc-adac','rc-answer'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  document.getElementById('suggestions-box').style.display = 'none';
+
   try {
-    const r = await fetch(apiBase() + '/chat', {
+    // Step 1: Image analysis
+    stepActive('step-image');
+    const formData = new FormData();
+    if (_fileDataUrl) {
+      const res = await fetch(_fileDataUrl);
+      const blob = await res.blob();
+      formData.append('image', blob, 'upload.jpg');
+    } else {
+      formData.append('image_url', heroUrl);
+    }
+    const ctx = document.getElementById('hero-context').value.trim();
+    if (ctx) formData.append('context', ctx);
+
+    const imgResp = await fetch(apiBase() + '/image/analyze', {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    });
+    const imgData = await imgResp.json();
+    stepDone('step-image');
+    renderImageResult(imgData);
+
+    // Step 2: Vehicle lookup if detected
+    stepActive('step-adac');
+    stepActive('step-db');
+    let adacData = null;
+    if (imgData.detected_make && imgData.detected_model) {
+      const vlResp = await fetch(apiBase() + '/vehicle/lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          make: imgData.detected_make,
+          model: imgData.detected_model,
+        }),
+      });
+      adacData = await vlResp.json();
+      renderVehicleResult(adacData, imgData);
+      renderAdacResult(adacData);
+    } else {
+      document.getElementById('rc-vehicle').style.display = 'none';
+      document.getElementById('rc-adac').style.display = 'none';
+    }
+    stepDone('step-adac');
+    stepDone('step-db');
+
+    // Step 3: Chat/diagnosis
+    stepActive('step-answer');
+    const query = ctx || buildQueryFromImage(imgData);
+    const chatBody = { query };
+    if (imgData.detected_make) chatBody.vehicle = { make: imgData.detected_make, model: imgData.detected_model };
+    if (heroUrl) chatBody.image_url = heroUrl;
+
+    const chatResp = await fetch(apiBase() + '/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify(body),
+      body: JSON.stringify(chatBody),
     });
-    const d = await r.json();
-    showResult('chat-result', renderChatResult(d));
-  } catch(e) {
-    showResult('chat-result', `<div class="badge red">Error: ${escHtml(e.message)}</div>`);
+    const chatData = await chatResp.json();
+    stepDone('step-answer');
+    renderAnswerResult(chatData);
+
+    document.getElementById('results').classList.add('visible');
+    generateSuggestions(imgData, adacData, chatData);
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  } catch (err) {
+    console.error(err);
+    alert('Analysis failed: ' + err.message);
   } finally {
-    setLoading('chat-btn', false);
+    btn.disabled = false;
+    btn.innerHTML = '<span>🔍</span> Analyze My Car';
+    document.getElementById('pipeline').classList.remove('visible');
   }
 }
 
-function renderChatResult(d) {
-  const c = d.confidence || 0;
+function buildQueryFromImage(d) {
+  const parts = [];
+  if (d.detected_make && d.detected_model) parts.push(`I have a ${d.detected_make} ${d.detected_model}.`);
+  if (d.warning_lights_detected?.length) parts.push(`Warning lights: ${d.warning_lights_detected.join(', ')}.`);
+  if (d.damage_detected) parts.push('Visible damage detected.');
+  if (d.observations?.length) parts.push('Observations: ' + d.observations.slice(0,2).join('. '));
+  return parts.join(' ') || 'What can you tell me about my car from this photo?';
+}
+
+// ── Render: Image result ──
+function renderImageResult(d) {
+  const body = document.getElementById('rc-image-body');
   let html = '';
 
-  // Answer
-  html += `<div class="answer-box">${escHtml(d.answer || '(no answer)')}</div>`;
-
-  // Meta badges
-  html += `<div class="meta-row">`;
-  html += `<span class="badge ${confClass(c)}">confidence ${Math.round(c * 100)}%</span>`;
-  if (d.elapsed_ms) html += `<span class="badge">${Math.round(d.elapsed_ms)}ms</span>`;
-  if (d.used_agents?.length) html += `<span class="badge">${d.used_agents.join(', ')}</span>`;
-  if (d.needs_clarification) html += `<span class="badge amber">needs clarification</span>`;
+  // Quality badge
+  const qClass = d.image_quality === 'good' ? 'green' : d.image_quality === 'poor' ? 'amber' : 'red';
+  html += `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">`;
+  html += `<span class="badge ${qClass}">📷 ${d.image_quality} quality</span>`;
+  if (d.vehicle_detected) html += `<span class="badge indigo">🚗 vehicle detected</span>`;
+  if (d.damage_detected) html += `<span class="badge red">⚠️ damage found</span>`;
   html += `</div>`;
 
-  // Confidence bar
-  html += `<div class="conf-bar"><div class="conf-fill" style="width:${Math.round(c*100)}%;background:${confColor(c)}"></div></div>`;
+  // Warning lights
+  if (d.warning_lights_detected?.length) {
+    html += `<div class="section-label">Warning Lights</div>`;
+    html += `<div style="display:flex;flex-wrap:wrap;gap:4px;">`;
+    d.warning_lights_detected.forEach(w => html += `<span class="warning-pill">⚠️ ${w}</span>`);
+    html += `</div>`;
+  }
+
+  // Observations
+  if (d.observations?.length) {
+    html += `<div class="section-label" style="margin-top:8px;">Observations</div>`;
+    d.observations.forEach(o => html += `<div class="observation">${o}</div>`);
+  }
 
   // Clarification
-  if (d.clarification_questions?.length) {
-    html += `<div class="section-title">Clarification questions</div>`;
-    html += `<div class="clarification-box">`;
-    d.clarification_questions.forEach(q => { html += `• ${escHtml(q)}<br>`; });
+  if (d.needs_clarification && d.clarification_questions?.length) {
+    html += `<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--amber);margin-top:6px;">`;
+    d.clarification_questions.forEach(q => html += `<div>💬 ${q}</div>`);
+    html += `</div>`;
+  }
+
+  if (!d.observations?.length && !d.warning_lights_detected?.length) {
+    html += `<div class="empty-state">No specific observations detected.</div>`;
+  }
+
+  body.innerHTML = html;
+  document.getElementById('rc-image').style.display = '';
+}
+
+// ── Render: Vehicle identified ──
+function renderVehicleResult(adac, img) {
+  const card = document.getElementById('rc-vehicle');
+  const body = document.getElementById('rc-vehicle-body');
+  if (!img.detected_make) { card.style.display = 'none'; return; }
+
+  const info = adac?.vehicle_info;
+  let html = `<div class="vehicle-detected">`;
+  if (info?.image_url) html += `<img class="vehicle-img" src="${info.image_url}" alt="${img.detected_make} ${img.detected_model}" onerror="this.style.display='none'" />`;
+  html += `<div>
+    <div class="vehicle-name">${img.detected_make} ${img.detected_model}</div>
+    <div class="vehicle-sub">${info ? (info.year_from || '') + (info.year_to ? '–' + info.year_to : '') + (info.engine_types?.length ? ' · ' + info.engine_types.slice(0,3).join(', ') : '') : 'Identified from photo'}</div>
+  </div></div>`;
+
+  if (adac?.corrections?.length) {
+    html += `<div style="font-size:11px;color:var(--muted);margin-top:4px;">🔧 Normalized: ${adac.corrections.join(' · ')}</div>`;
+  }
+
+  body.innerHTML = html;
+  card.style.display = '';
+}
+
+// ── Render: ADAC ──
+function renderAdacResult(d) {
+  const card = document.getElementById('rc-adac');
+  const body = document.getElementById('rc-adac-body');
+  if (!d?.found || !d.vehicle_info) { card.style.display = 'none'; return; }
+
+  const info = d.vehicle_info;
+  let html = '';
+
+  // Known issues
+  if (info.known_issues_summary) {
+    html += `<div class="section-label">Known Issues</div>`;
+    html += `<div style="font-size:13px;line-height:1.6;color:var(--text);">${info.known_issues_summary}</div>`;
+  }
+
+  // Reliability by year
+  if (info.reliability_by_year?.length) {
+    html += `<div class="section-label" style="margin-top:12px;">Breakdown Rate (per 1,000 vehicles)</div>`;
+    const maxVal = Math.max(...info.reliability_by_year.map(y => y.breakdown_rate_per_1000 || 0), 1);
+    info.reliability_by_year.forEach(y => {
+      const rate = y.breakdown_rate_per_1000 || 0;
+      const pct = Math.round((rate / maxVal) * 100);
+      const color = rate < 2 ? '#22c55e' : rate < 4 ? '#f59e0b' : '#ef4444';
+      const label = y.rating || '';
+      html += `<div class="reliability-year">
+        <span class="ry-year">${y.year}</span>
+        <div class="ry-bar-wrap"><div class="ry-bar" style="width:${pct}%;background:${color}"></div></div>
+        <span class="ry-val">${rate.toFixed(1)}</span>
+        <span class="ry-rating" style="color:${color}">${label}</span>
+      </div>`;
+    });
+  }
+
+  // Issue patterns
+  if (d.issue_patterns?.length) {
+    html += `<div class="section-label" style="margin-top:12px;">Known Issue Patterns</div>`;
+    d.issue_patterns.slice(0,4).forEach(p => {
+      html += `<div class="issue-item">
+        <div class="issue-system">${p.system || p.component || ''}</div>
+        <div>${p.description || p.title || ''}</div>
+      </div>`;
+    });
+  }
+
+  if (info.adac_page_url) {
+    html += `<div class="adac-attr">Data source: <a href="${info.adac_page_url}" target="_blank">ADAC Autokatalog ↗</a> · Real measured breakdown statistics</div>`;
+  }
+
+  body.innerHTML = html || '<div class="empty-state">No reliability data available.</div>';
+  card.style.display = '';
+}
+
+// ── Suggested questions ──
+function generateSuggestions(imgData, adacData, chatData) {
+  const chips = [];
+  const make = imgData?.detected_make || '';
+  const model = imgData?.detected_model || '';
+  const carName = make && model ? `${make} ${model}` : 'this car';
+
+  // Warning-light specific
+  const lights = imgData?.warning_lights_detected || [];
+  if (lights.length > 0) {
+    chips.push(`What does the "${lights[0]}" warning light mean and how urgent is it?`);
+  }
+
+  // Damage specific
+  if (imgData?.damage_detected) {
+    chips.push(`How serious is the damage and what should I do first?`);
+  }
+
+  // ADAC-based
+  if (adacData?.found) {
+    const issues = adacData?.vehicle_info?.known_issues_summary;
+    if (issues) {
+      chips.push(`What are the most common problems with the ${carName}?`);
+    }
+    chips.push(`Is the ${carName} reliable for long trips and highway driving?`);
+  }
+
+  // Generic follow-ups
+  chips.push(`What maintenance should I do next on the ${carName}?`);
+  if (!imgData?.damage_detected && lights.length === 0) {
+    chips.push(`Should I be worried about anything I can see in the photo?`);
+  }
+  chips.push(`What is the typical repair cost if something needs fixing?`);
+
+  // Render up to 4
+  const box = document.getElementById('suggestions-box');
+  const container = document.getElementById('suggestions-chips');
+  const shown = chips.slice(0, 4);
+  container.innerHTML = shown
+    .map(q => `<button class="suggestion-chip" onclick="clickSuggestion(${JSON.stringify(q)})">${q}</button>`)
+    .join('');
+  box.style.display = shown.length ? '' : 'none';
+}
+
+function clickSuggestion(text) {
+  const chatInput = document.getElementById('chat-query');
+  chatInput.value = text;
+  document.querySelector('.tools-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  chatInput.focus();
+}
+
+// ── Render: Answer ──
+function renderAnswerResult(d) {
+  const card = document.getElementById('rc-answer');
+  const body = document.getElementById('rc-answer-body');
+
+  let html = '';
+  const answer = d.answer || d.final_answer || d.message || '';
+  if (answer) {
+    html += `<div style="font-size:14px;line-height:1.7;white-space:pre-wrap;">${answer}</div>`;
+  }
+
+  // Confidence + agents
+  if (d.confidence !== undefined || d.used_agents?.length) {
+    html += `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">`;
+    if (d.confidence !== undefined) {
+      const cClass = d.confidence >= .7 ? 'green' : d.confidence >= .4 ? 'amber' : 'red';
+      html += `<span class="badge ${cClass}">confidence ${(d.confidence*100).toFixed(0)}%</span>`;
+    }
+    if (d.used_agents?.length) {
+      d.used_agents.forEach(a => html += `<span class="badge indigo">⚡ ${a}</span>`);
+    }
+    if (d.elapsed_ms) {
+      html += `<span class="badge">${d.elapsed_ms.toFixed(0)} ms</span>`;
+    }
     html += `</div>`;
   }
 
   // Sources
   if (d.sources?.length) {
-    html += `<div class="section-title">Sources</div>`;
-    html += `<div class="sources-list">`;
-    d.sources.forEach(s => {
-      html += `<div class="source-item">
-        <span class="badge">${escHtml(s.type || '?')}</span>
-        ${escHtml(s.label || '')}
-        ${s.confidence != null ? `<span style="color:var(--muted);margin-left:auto">${Math.round((s.confidence||0)*100)}%</span>` : ''}
-      </div>`;
-    });
+    html += `<hr class="section-divider" />`;
+    html += `<div style="display:flex;flex-wrap:wrap;gap:6px;">`;
+    d.sources.forEach(s => html += `<span class="badge">📎 ${s.label || s.type}</span>`);
     html += `</div>`;
   }
 
-  // Uncertainty
-  if (d.uncertainty_notes?.length) {
-    html += `<div class="section-title">Uncertainty notes</div>`;
-    d.uncertainty_notes.forEach(n => {
-      html += `<div class="badge amber" style="display:block;margin-top:4px">${escHtml(n)}</div>`;
-    });
-  }
-
-  // Raw JSON
-  html += `<details><summary>Raw JSON</summary><div class="raw-json">${escHtml(JSON.stringify(d, null, 2))}</div></details>`;
-
-  return html;
+  body.innerHTML = html || '<div class="empty-state">No answer generated.</div>';
+  card.style.display = '';
 }
 
-// ──────────────────────────────────────────────
-// Vehicle Lookup
-// ──────────────────────────────────────────────
-
+// ── Vehicle Lookup (manual) ──
 async function sendVehicleLookup() {
-  const make = document.getElementById('vl-make').value.trim();
+  const make  = document.getElementById('vl-make').value.trim();
   const model = document.getElementById('vl-model').value.trim();
-  const yearRaw = document.getElementById('vl-year').value.trim();
-  const year = yearRaw ? parseInt(yearRaw) : null;
+  const year  = parseInt(document.getElementById('vl-year').value.trim()) || null;
+  if (!model) { alert('Model is required.'); return; }
 
-  if (!model) { alert('Please enter a model name.'); return; }
+  const btn = document.getElementById('vl-btn');
+  btn.disabled = true; btn._orig = btn.innerHTML;
+  btn.innerHTML = '<div class="spinner"></div> Looking up…';
 
-  const body = { model };
-  if (make) body.make = make;
-  if (year && !isNaN(year)) body.year = year;
-
-  setLoading('vl-btn', true);
   try {
+    const body = { model };
+    if (make) body.make = make;
+    if (year) body.year = year;
     const r = await fetch(apiBase() + '/vehicle/lookup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -803,310 +1038,78 @@ async function sendVehicleLookup() {
       body: JSON.stringify(body),
     });
     const d = await r.json();
-    showResult('vl-result', renderVehicleLookup(d));
+    renderVehicleLookupResult(d);
   } catch(e) {
-    showResult('vl-result', `<div class="badge red">Error: ${escHtml(e.message)}</div>`);
+    showToolResult('vl-result', `<span style="color:var(--red)">Error: ${e.message}</span>`);
   } finally {
-    setLoading('vl-btn', false);
+    btn.disabled = false; btn.innerHTML = btn._orig;
   }
 }
 
-function renderVehicleLookup(d) {
+function renderVehicleLookupResult(d) {
   let html = '';
-
-  // Header: normalized name + found badge
-  const name = [d.normalized_make, d.normalized_model, d.year].filter(Boolean).join(' ');
-  html += `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">`;
-  html += `<span style="font-size:15px;font-weight:700;">${escHtml(name)}</span>`;
-  html += `<span class="badge ${d.found ? 'green' : 'red'}">${d.found ? 'found in ADAC' : 'not found'}</span>`;
-  if (d.elapsed_ms) html += `<span class="badge" style="margin-left:auto">${Math.round(d.elapsed_ms)}ms</span>`;
-  html += `</div>`;
-
-  // Corrections applied
-  if (d.corrections?.length) {
-    html += `<div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);border-radius:6px;padding:8px 12px;margin-bottom:8px;">`;
-    html += `<div style="font-size:11px;font-weight:600;color:var(--accent);margin-bottom:4px;">Corrections applied</div>`;
-    d.corrections.forEach(c => { html += `<div style="font-size:12px;color:var(--muted);">• ${escHtml(c)}</div>`; });
-    html += `</div>`;
-  }
-
   if (!d.found) {
-    html += `<div class="badge amber" style="display:block">No ADAC data found for this vehicle.</div>`;
-    html += `<details><summary>Raw JSON</summary><div class="raw-json">${escHtml(JSON.stringify(d, null, 2))}</div></details>`;
-    return html;
+    html = `<div style="color:var(--muted);">No ADAC data found for <strong>${d.normalized_make} ${d.normalized_model}</strong>.</div>`;
+    if (d.corrections?.length) html += `<div style="font-size:11px;color:var(--muted);margin-top:6px;">Normalized: ${d.corrections.join(' · ')}</div>`;
+    showToolResult('vl-result', html); return;
   }
-
-  // Vehicle info
-  if (d.vehicle_info) {
-    const vi = d.vehicle_info;
-
-    // Description
-    if (vi.description) {
-      html += `<div class="section-title">Description</div>`;
-      html += `<div style="font-size:12px;color:var(--text);line-height:1.6;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 12px;">${escHtml(vi.description)}</div>`;
-    }
-
-    // Generations
-    if (vi.generations?.length) {
-      html += `<div class="section-title">Generations (${vi.generations.length})</div>`;
-      html += `<div style="display:flex;flex-wrap:wrap;gap:6px;">`;
-      vi.generations.forEach(g => {
-        const range = [g.year_from, g.year_to || 'present'].filter(Boolean).join(' – ');
-        html += `<div class="badge">${escHtml(g.name || '?')} <span style="color:var(--muted);margin-left:4px">${range}</span></div>`;
-      });
-      html += `</div>`;
-    }
-
-    // Reliability by year — mini bar chart
-    if (vi.reliability_by_year?.length) {
-      const mileage = vi.reliability_by_year[0]?.annual_mileage_km;
-      const mileageNote = mileage ? ` · mileage assumption: ${mileage.toLocaleString()} km/yr` : '';
-      html += `<div class="section-title">Reliability by year (ADAC Pannenstatistik${mileageNote})</div>`;
-      const maxVal = Math.max(...vi.reliability_by_year.map(r => r.breakdowns_per_1000), 1);
-      html += `<div style="display:flex;flex-direction:column;gap:6px;">`;
-      vi.reliability_by_year.forEach(r => {
-        const pct = Math.round((r.breakdowns_per_1000 / maxVal) * 100);
-        const score = r.rating_score;
-        const col = score >= 0.75 ? 'var(--success)' : score >= 0.45 ? 'var(--warn)' : 'var(--error)';
-
-        // Class threshold label (e.g. "class ≤2.0 for gut")
-        let thresholdLabel = '';
-        if (r.class_thresholds) {
-          const ct = r.class_thresholds;
-          const val = r.breakdowns_per_1000;
-          // Show the threshold boundary they fall at
-          let boundary, label;
-          if (val <= ct.sehr_gut) { boundary = ct.sehr_gut; label = 'sehr gut'; }
-          else if (val <= ct.gut) { boundary = ct.gut; label = 'gut'; }
-          else if (val <= ct.befriedigend) { boundary = ct.befriedigend; label = 'befriedigend'; }
-          else if (val <= ct.ausreichend) { boundary = ct.ausreichend; label = 'ausreichend'; }
-          else { boundary = ct.ausreichend; label = 'mangelhaft'; }
-          thresholdLabel = ` <span style="color:var(--muted)">class ≤${boundary} for ${label}</span>`;
-        }
-
-        const genLabel = r.generation_name ? `<span style="color:var(--muted);font-size:10px;margin-left:2px;">${escHtml(r.generation_name)}</span>` : '';
-
-        html += `<div style="display:flex;flex-direction:column;gap:2px;">
-          <div style="display:flex;align-items:center;gap:8px;font-size:11px;">
-            <span style="width:32px;color:var(--muted);flex-shrink:0">${r.year}</span>
-            <div style="flex:1;background:var(--border);border-radius:2px;height:6px;overflow:hidden;">
-              <div style="width:${pct}%;height:100%;background:${col};border-radius:2px;transition:width 0.3s"></div>
-            </div>
-            <span style="color:${col};flex-shrink:0;font-weight:600">${r.breakdowns_per_1000}/1000 — ${escHtml(r.rating)}</span>
-            ${thresholdLabel}
-          </div>
-          ${genLabel ? `<div style="padding-left:40px;">${genLabel}</div>` : ''}
-        </div>`;
-      });
-      html += `</div>`;
-    }
-  }
-
-  // Issue patterns
-  if (d.issue_patterns?.length) {
-    html += `<div class="section-title">Breakdown patterns (${d.issue_patterns.length})</div>`;
-    d.issue_patterns.forEach(p => {
-      html += `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 12px;margin-top:6px;">`;
-      html += `<div style="font-weight:600;font-size:12px;margin-bottom:4px;">${escHtml(p.pattern_name || '')}`;
-      if (p.affected_years) html += ` <span style="color:var(--muted);font-weight:400">(${escHtml(p.affected_years)})</span>`;
-      html += `</div>`;
-      if (p.symptoms?.length) {
-        html += `<div style="font-size:11px;color:var(--muted);">${p.symptoms.map(s => escHtml(s)).join('<br>')}</div>`;
-      }
-      if (p.root_cause) html += `<div style="font-size:11px;color:var(--warn);margin-top:3px;">Cause: ${escHtml(p.root_cause)}</div>`;
-      if (p.solution) html += `<div style="font-size:11px;color:var(--success);margin-top:2px;">→ ${escHtml(p.solution)}</div>`;
-      html += `</div>`;
+  const info = d.vehicle_info;
+  html += `<div style="font-weight:700;font-size:14px;margin-bottom:8px;">${d.normalized_make} ${d.normalized_model}`;
+  if (d.year) html += ` (${d.year})`;
+  html += `</div>`;
+  if (info?.known_issues_summary) html += `<div style="font-size:12px;line-height:1.5;margin-bottom:8px;">${info.known_issues_summary}</div>`;
+  if (info?.reliability_by_year?.length) {
+    html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Breakdown rate / 1,000 vehicles</div>`;
+    const maxV = Math.max(...info.reliability_by_year.map(y => y.breakdown_rate_per_1000 || 0), 1);
+    info.reliability_by_year.forEach(y => {
+      const rate = y.breakdown_rate_per_1000 || 0;
+      const pct = Math.round(rate/maxV*100);
+      const color = rate<2?'#22c55e':rate<4?'#f59e0b':'#ef4444';
+      html += `<div class="reliability-year">
+        <span class="ry-year">${y.year}</span>
+        <div class="ry-bar-wrap"><div class="ry-bar" style="width:${pct}%;background:${color}"></div></div>
+        <span class="ry-val">${rate.toFixed(1)}</span>
+        <span class="ry-rating" style="color:${color}">${y.rating||''}</span>
+      </div>`;
     });
   }
-
-  html += `<details><summary>Raw JSON</summary><div class="raw-json">${escHtml(JSON.stringify(d, null, 2))}</div></details>`;
-  return html;
+  if (info?.adac_page_url) html += `<div style="font-size:11px;color:var(--muted);margin-top:8px;"><a href="${info.adac_page_url}" target="_blank" style="color:var(--accent2)">View on ADAC ↗</a></div>`;
+  if (d.corrections?.length) html += `<div style="font-size:11px;color:var(--muted);margin-top:6px;">🔧 ${d.corrections.join(' · ')}</div>`;
+  showToolResult('vl-result', html);
 }
 
-// ──────────────────────────────────────────────
-// Image Analysis
-// ──────────────────────────────────────────────
+// ── Chat (manual) ──
+async function sendChat() {
+  const query = document.getElementById('chat-query').value.trim();
+  if (!query) return;
 
-let _fileDataUrl = null;
+  const btn = document.getElementById('chat-btn');
+  btn.disabled = true; btn._orig = btn.innerHTML;
+  btn.innerHTML = '<div class="spinner"></div> Thinking…';
 
-function clearFileSelection() {
-  _fileDataUrl = null;
-  document.getElementById('file-name').style.display = 'none';
-  document.getElementById('img-preview').classList.remove('visible');
-  document.getElementById('img-preview').src = '';
-}
-
-function handleFileSelect(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  loadFile(file);
-}
-
-function loadFile(file) {
-  const reader = new FileReader();
-  reader.onload = ev => {
-    _fileDataUrl = ev.target.result;
-    document.getElementById('file-thumb').src = _fileDataUrl;
-    document.getElementById('file-label').textContent = file.name;
-    document.getElementById('file-name').style.display = 'flex';
-    document.getElementById('img-url').value = '';
-    // Large preview
-    document.getElementById('img-preview').src = _fileDataUrl;
-    document.getElementById('img-preview').classList.add('visible');
-  };
-  reader.readAsDataURL(file);
-}
-
-function handleDragOver(e) {
-  e.preventDefault();
-  document.getElementById('drop-zone').classList.add('drag-over');
-}
-
-function handleDragLeave(e) {
-  document.getElementById('drop-zone').classList.remove('drag-over');
-}
-
-function handleDrop(e) {
-  e.preventDefault();
-  document.getElementById('drop-zone').classList.remove('drag-over');
-  const file = e.dataTransfer.files[0];
-  if (file) loadFile(file);
-}
-
-// Show URL preview when URL changes
-document.getElementById('img-url').addEventListener('input', function() {
-  const url = this.value.trim();
-  const preview = document.getElementById('img-preview');
-  if (url) {
-    preview.src = url;
-    preview.classList.add('visible');
-    clearFileSelection();
-    _fileDataUrl = null; // URL takes precedence
-  } else {
-    preview.classList.remove('visible');
-    preview.src = '';
-  }
-});
-
-async function sendImageAnalysis() {
-  const urlField = document.getElementById('img-url').value.trim();
-  const context = document.getElementById('img-context').value.trim();
-
-  const formData = new FormData();
-  if (context) formData.append('context', context);
-
-  if (_fileDataUrl) {
-    // Convert data URL → Blob for upload
-    const res = await fetch(_fileDataUrl);
-    const blob = await res.blob();
-    formData.append('image', blob, 'upload.jpg');
-  } else if (urlField) {
-    formData.append('image_url', urlField);
-  } else {
-    alert('Please select an image file or enter an image URL.');
-    return;
-  }
-
-  setLoading('img-btn', true);
   try {
-    const r = await fetch(apiBase() + '/image/analyze', {
+    const r = await fetch(apiBase() + '/chat', {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: formData,
+      body: JSON.stringify({ query }),
     });
     const d = await r.json();
-    showResult('img-result', renderImageResult(d));
+    const answer = d.answer || d.final_answer || d.message || JSON.stringify(d, null, 2);
+    let html = `<div style="font-size:13px;line-height:1.6;white-space:pre-wrap;">${answer}</div>`;
+    if (d.elapsed_ms) html += `<div style="font-size:11px;color:var(--muted);margin-top:6px;">${d.elapsed_ms.toFixed(0)} ms</div>`;
+    showToolResult('chat-result', html);
   } catch(e) {
-    showResult('img-result', `<div class="badge red">Error: ${escHtml(e.message)}</div>`);
+    showToolResult('chat-result', `<span style="color:var(--red)">Error: ${e.message}</span>`);
   } finally {
-    setLoading('img-btn', false);
+    btn.disabled = false; btn.innerHTML = btn._orig;
   }
 }
 
-function renderImageResult(d) {
-  const c = d.confidence || 0;
-  let html = '';
-
-  // Status badges
-  html += `<div class="meta-row">`;
-  html += `<span class="badge ${confClass(c)}">confidence ${Math.round(c * 100)}%</span>`;
-
-  const q = d.image_quality || 'good';
-  html += `<span class="quality-badge ${qualityClass(q)}">quality: ${escHtml(q)}</span>`;
-
-  if (d.vehicle_detected === false) html += `<span class="badge red">no vehicle detected</span>`;
-  else if (d.vehicle_count > 1) html += `<span class="badge amber">${d.vehicle_count} vehicles</span>`;
-  else if (d.vehicle_count === 1) html += `<span class="badge green">1 vehicle</span>`;
-
-  if (d.damage_detected) html += `<span class="badge red">damage detected</span>`;
-  if (d.elapsed_ms) html += `<span class="badge">${Math.round(d.elapsed_ms)}ms</span>`;
-  html += `</div>`;
-
-  // Confidence bar
-  html += `<div class="conf-bar"><div class="conf-fill" style="width:${Math.round(c*100)}%;background:${confColor(c)}"></div></div>`;
-
-  // Clarification
-  if (d.clarification_questions?.length) {
-    html += `<div class="section-title">Clarification needed</div>`;
-    html += `<div class="clarification-box">`;
-    d.clarification_questions.forEach(q => { html += `• ${escHtml(q)}<br>`; });
-    html += `</div>`;
-  }
-
-  // Warning lights
-  if (d.warning_lights_detected?.length) {
-    html += `<div class="section-title">Warning lights</div>`;
-    html += `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">`;
-    d.warning_lights_detected.forEach(w => { html += `<span class="warning-light-pill">⚠ ${escHtml(w)}</span>`; });
-    html += `</div>`;
-  }
-
-  // Observations
-  if (d.observations?.length) {
-    html += `<div class="section-title">Observations</div>`;
-    html += `<div class="observations-list">`;
-    d.observations.forEach(o => { html += `<div style="font-size:12px;color:var(--text)">• ${escHtml(o)}</div>`; });
-    html += `</div>`;
-  }
-
-  // Possible findings
-  if (d.possible_findings?.length) {
-    html += `<div class="section-title">Possible findings</div>`;
-    html += `<div class="findings-list">`;
-    d.possible_findings.forEach(f => { html += `<div style="font-size:12px;color:var(--muted)">→ ${escHtml(f)}</div>`; });
-    html += `</div>`;
-  }
-
-  // Limitations
-  if (d.limitations?.length) {
-    html += `<div class="section-title">Limitations</div>`;
-    d.limitations.forEach(l => { html += `<div class="badge amber" style="display:block;margin-top:4px">${escHtml(l)}</div>`; });
-  }
-
-  // ADAC enrichment
-  if (d.detected_make || d.detected_model) {
-    html += `<div class="section-title">Identified vehicle</div>`;
-    html += `<div class="badge green">${escHtml([d.detected_make, d.detected_model].filter(Boolean).join(' '))}</div>`;
-  }
-  if (d.adac_summary) {
-    html += `<div class="section-title">ADAC — Known issues</div>`;
-    html += `<div style="font-size:12px;color:var(--text);line-height:1.6;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 12px;">${escHtml(d.adac_summary)}</div>`;
-  }
-  if (d.adac_issue_patterns?.length) {
-    html += `<div class="section-title">ADAC — Breakdown patterns</div>`;
-    d.adac_issue_patterns.forEach(p => {
-      html += `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 12px;margin-top:6px;">`;
-      html += `<div style="font-weight:600;font-size:12px;margin-bottom:4px;">${escHtml(p.pattern_name || '')}</div>`;
-      if (p.symptoms?.length) html += `<div style="font-size:11px;color:var(--muted);">${p.symptoms.map(s => escHtml(s)).join(' • ')}</div>`;
-      if (p.solution) html += `<div style="font-size:11px;color:var(--success);margin-top:3px;">→ ${escHtml(p.solution)}</div>`;
-      html += `</div>`;
-    });
-  }
-
-  // Raw JSON
-  html += `<details><summary>Raw JSON</summary><div class="raw-json">${escHtml(JSON.stringify(d, null, 2))}</div></details>`;
-
-  return html;
+function showToolResult(id, html) {
+  const el = document.getElementById(id);
+  el.innerHTML = html;
+  el.classList.add('visible');
 }
 </script>
 </body>

@@ -6,6 +6,7 @@ preventing circular import issues. Populate lazily on first access.
 """
 from __future__ import annotations
 
+from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Callable
 
 if TYPE_CHECKING:
@@ -26,11 +27,6 @@ def _build_registry() -> dict[str, Callable]:
     }
 
 
-_registry: dict[str, Callable] | None = None
-
-
+@lru_cache(maxsize=1)
 def get_registry() -> dict[str, Callable]:
-    global _registry
-    if _registry is None:
-        _registry = _build_registry()
-    return _registry
+    return _build_registry()

@@ -19,6 +19,8 @@ clarify_if_needed     route_agents
 """
 from __future__ import annotations
 
+from functools import lru_cache
+
 from langgraph.graph import END, START, StateGraph
 
 from app.agents.orchestrator_agent import (
@@ -85,13 +87,7 @@ def build_graph() -> StateGraph:
     return builder.compile()
 
 
-# Module-level compiled graph (built once at import time when explicitly called)
-_compiled_graph = None
-
-
+@lru_cache(maxsize=1)
 def get_compiled_graph():
-    """Return the compiled graph, building it once if needed."""
-    global _compiled_graph
-    if _compiled_graph is None:
-        _compiled_graph = build_graph()
-    return _compiled_graph
+    """Return the compiled graph, built once and cached."""
+    return build_graph()

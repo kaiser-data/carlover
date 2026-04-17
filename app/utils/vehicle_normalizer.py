@@ -10,7 +10,7 @@ Handles:
 from __future__ import annotations
 
 import difflib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 
@@ -137,11 +137,7 @@ class NormalizedVehicle:
     make: str
     model: str
     year: Optional[int] = None
-    corrections: list[str] = None  # human-readable description of changes
-
-    def __post_init__(self):
-        if self.corrections is None:
-            self.corrections = []
+    corrections: list[str] = field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
