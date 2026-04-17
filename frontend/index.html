@@ -634,7 +634,7 @@ async function checkHealth() {
   dot.className = '';
   txt.textContent = 'checking…';
   try {
-    const r = await fetch(apiBase() + '/health');
+    const r = await fetch(apiBase() + '/health', { credentials: 'include' });
     const d = await r.json();
     dot.className = 'ok';
     txt.textContent = `v${d.version} — ok`;
@@ -712,6 +712,7 @@ async function sendChat() {
     const r = await fetch(apiBase() + '/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(body),
     });
     const d = await r.json();
@@ -798,6 +799,7 @@ async function sendVehicleLookup() {
     const r = await fetch(apiBase() + '/vehicle/lookup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(body),
     });
     const d = await r.json();
@@ -1009,6 +1011,7 @@ async function sendImageAnalysis() {
   try {
     const r = await fetch(apiBase() + '/image/analyze', {
       method: 'POST',
+      credentials: 'include',
       body: formData,
     });
     const d = await r.json();
