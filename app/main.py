@@ -4,6 +4,7 @@ import pathlib
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from loguru import logger
 
@@ -52,6 +53,10 @@ def create_app() -> FastAPI:
     app.include_router(image.router)
     app.include_router(vehicle.router)
     app.include_router(debug.router)
+
+    @app.get("/", include_in_schema=False)
+    async def root():
+        return RedirectResponse(url="/ui/")
 
     if _FRONTEND_DIR.exists():
         app.mount("/ui", StaticFiles(directory=_FRONTEND_DIR, html=True), name="frontend")
