@@ -3,395 +3,263 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Carlover on Daytona</title>
+<title>Carlover — Daytona</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    background: #080b14;
-    color: #e2e8f0;
+    background: #07091
+
+2;
     font-family: 'Inter', sans-serif;
     min-height: 100vh;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    padding: 56px 24px 72px;
+    justify-content: center;
+    padding: 40px 24px;
   }
 
-  /* ── Title ── */
-  .title {
-    text-align: center;
-    margin-bottom: 52px;
-  }
-  .title h1 {
-    font-size: clamp(26px, 4vw, 40px);
-    font-weight: 900;
-    letter-spacing: -0.5px;
-    color: #fff;
-    margin-bottom: 10px;
-  }
-  .title h1 em {
-    font-style: normal;
-    color: #818cf8;
-  }
-  .title p {
-    font-size: 15px;
-    color: #64748b;
-    max-width: 480px;
-    margin: 0 auto;
-    line-height: 1.6;
-  }
-
-  /* ── Top node (user) ── */
-  .node {
-    background: #131929;
-    border: 1.5px solid #252c48;
-    border-radius: 16px;
-    padding: 18px 32px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 15px;
-    font-weight: 600;
-    color: #e2e8f0;
-  }
-  .node .icon { font-size: 24px; }
-  .node .sub  { font-size: 12px; font-weight: 400; color: #64748b; margin-top: 1px; }
-
-  /* ── Connector ── */
-  .connector {
+  .slide {
+    width: 100%;
+    max-width: 820px;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0;
-    margin: 4px 0;
   }
-  .conn-line {
+
+  /* ── Loveable App (top) ── */
+  .app-node {
+    background: linear-gradient(135deg, #1a0e2e, #1e1030);
+    border: 2px solid #f472b6;
+    border-radius: 20px;
+    padding: 20px 44px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 0 40px rgba(244,114,182,0.2);
+  }
+  .app-node .big-icon { font-size: 36px; }
+  .app-node .label    { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
+  .app-node .sub      { font-size: 12px; font-weight: 500; color: #f9a8d4; margin-top: 2px; }
+
+  /* ── Arrow ── */
+  .arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2px 0;
+  }
+  .arrow-shaft {
     width: 2px;
-    height: 32px;
-    background: linear-gradient(to bottom, #252c48, #6366f1);
+    height: 36px;
+    background: linear-gradient(to bottom, #6366f1aa, #6366f1);
   }
-  .conn-dot {
-    width: 8px;
-    height: 8px;
-    background: #6366f1;
-    border-radius: 50%;
-    box-shadow: 0 0 10px #6366f1;
+  .arrow-tip {
+    width: 0; height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 10px solid #6366f1;
   }
-  .conn-label {
+  .arrow-tag {
     font-size: 11px;
-    font-weight: 500;
+    font-weight: 600;
     color: #818cf8;
-    margin-top: 4px;
-    letter-spacing: 0.3px;
+    margin-top: 5px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
   }
 
   /* ── Daytona box ── */
   .daytona {
     width: 100%;
-    max-width: 780px;
+    background: linear-gradient(150deg, #0d1330 0%, #080c1e 100%);
     border: 2px solid #6366f1;
-    border-radius: 24px;
-    padding: 32px 28px 28px;
-    background: linear-gradient(160deg, #0f1528 0%, #0a0e1e 100%);
+    border-radius: 28px;
+    padding: 36px 32px 32px;
     box-shadow:
-      0 0 0 1px rgba(99,102,241,0.2),
-      0 32px 80px rgba(0,0,0,0.6),
-      inset 0 1px 0 rgba(255,255,255,0.04);
+      0 0 0 1px rgba(99,102,241,0.15),
+      0 40px 100px rgba(0,0,0,0.7),
+      inset 0 1px 0 rgba(255,255,255,0.05);
     position: relative;
   }
-
-  .daytona-badge {
+  .daytona-label {
     position: absolute;
-    top: -14px;
+    top: -15px;
     left: 50%;
     transform: translateX(-50%);
     background: #6366f1;
     color: #fff;
     font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 1px;
+    font-weight: 800;
+    letter-spacing: 2px;
     text-transform: uppercase;
-    padding: 5px 18px;
+    padding: 5px 20px;
     border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(99,102,241,0.5);
     white-space: nowrap;
-    box-shadow: 0 4px 16px rgba(99,102,241,0.5);
   }
 
-  .daytona-intro {
+  .parallel-hint {
     text-align: center;
-    font-size: 13px;
-    color: #475569;
-    margin-bottom: 28px;
-    margin-top: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #2d3a5a;
+    margin-bottom: 22px;
   }
 
-  /* ── Agents grid ── */
+  /* ── Agent cards ── */
   .agents {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
   }
 
   .agent {
-    background: #131929;
-    border: 1px solid #1e2640;
-    border-radius: 16px;
-    padding: 22px 20px 20px;
+    border-radius: 18px;
+    padding: 22px 14px 18px;
     display: flex;
     flex-direction: column;
-    gap: 0;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  .agent:hover {
-    border-color: var(--c);
-    box-shadow: 0 0 24px rgba(var(--cr), 0.12);
-  }
-
-  .agent-top {
-    display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
+    gap: 10px;
+    text-align: center;
+    border: 1.5px solid var(--c-dim);
+    background: var(--c-bg);
   }
-  .agent-emoji {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    background: rgba(var(--cr), 0.1);
-    border: 1px solid rgba(var(--cr), 0.25);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    flex-shrink: 0;
-  }
-  .agent-name {
-    font-size: 15px;
-    font-weight: 700;
+  .agent .a-icon { font-size: 36px; line-height: 1; }
+  .agent .a-name {
+    font-size: 14px;
+    font-weight: 800;
     color: #fff;
     line-height: 1.2;
   }
-  .agent-name span {
-    display: block;
+  .agent .a-tag  {
     font-size: 11px;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--c);
-    margin-top: 2px;
-    letter-spacing: 0.3px;
+    background: var(--c-dim);
+    border-radius: 6px;
+    padding: 3px 8px;
+    white-space: nowrap;
   }
-  .agent-desc {
-    font-size: 13px;
-    color: #8892a4;
-    line-height: 1.55;
-    flex: 1;
+
+  .agent-adac    { --c: #fbbf24; --c-bg: rgba(251,191,36,0.06); --c-dim: rgba(251,191,36,0.2); }
+  .agent-db      { --c: #34d399; --c-bg: rgba(52,211,153,0.06); --c-dim: rgba(52,211,153,0.2); }
+  .agent-image   { --c: #38bdf8; --c-bg: rgba(56,189,248,0.06); --c-dim: rgba(56,189,248,0.2); }
+  .agent-sandbox { --c: #c084fc; --c-bg: rgba(192,132,252,0.06); --c-dim: rgba(192,132,252,0.2); }
+
+  /* ── Return arrow ── */
+  .arrow-up .arrow-shaft {
+    background: linear-gradient(to bottom, #22c55e, #22c55eaa);
   }
-  .agent-source {
-    margin-top: 14px;
+  .arrow-up .arrow-tip {
+    border-top-color: #22c55e;
+  }
+  .arrow-up .arrow-tag { color: #4ade80; }
+
+  /* ── Data sources ── */
+  .sources {
     display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    color: #475569;
-    padding-top: 12px;
-    border-top: 1px solid #1a1f35;
+    gap: 10px;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 24px;
   }
-  .agent-source .dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--c);
-    flex-shrink: 0;
-  }
-
-  /* Per-agent colors */
-  .agent-adac     { --c: #f59e0b; --cr: 245,158,11; }
-  .agent-db       { --c: #22c55e; --cr: 34,197,94;  }
-  .agent-image    { --c: #38bdf8; --cr: 56,189,248;  }
-  .agent-sandbox  { --c: #a78bfa; --cr: 167,139,250; }
-
-  /* ── Parallel badge ── */
-  .parallel-note {
-    text-align: center;
-    font-size: 11px;
-    color: #3d4a6b;
-    margin-bottom: 18px;
+  .source {
+    background: #0d1020;
+    border: 1px solid #1e2640;
+    border-radius: 12px;
+    padding: 10px 16px;
     display: flex;
     align-items: center;
     gap: 8px;
-    justify-content: center;
-  }
-  .parallel-note::before, .parallel-note::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: #1a1f35;
-  }
-
-  /* ── Bottom connector + answer ── */
-  .answer-node {
-    background: rgba(34,197,94,0.08);
-    border: 1.5px solid rgba(34,197,94,0.35);
-    border-radius: 16px;
-    padding: 18px 32px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 15px;
-    font-weight: 600;
-    color: #e2e8f0;
-    box-shadow: 0 0 24px rgba(34,197,94,0.08);
-  }
-  .answer-node .icon { font-size: 24px; }
-  .answer-node .sub  { font-size: 12px; font-weight: 400; color: #4ade80; margin-top: 1px; }
-
-  /* ── Bottom note ── */
-  .footer {
-    margin-top: 40px;
-    text-align: center;
     font-size: 12px;
-    color: #2d3a54;
-    line-height: 1.9;
+    font-weight: 600;
+    color: #64748b;
   }
-  .footer a { color: #6366f1; text-decoration: none; }
+  .source .s-icon { font-size: 16px; }
 
-  @media (max-width: 560px) {
-    .agents { grid-template-columns: 1fr; }
+  @media (max-width: 600px) {
+    .agents { grid-template-columns: repeat(2, 1fr); }
   }
 </style>
 </head>
 <body>
+<div class="slide">
 
-<div class="title">
-  <h1>Carlover runs on <em>Daytona</em></h1>
-  <p>The <strong style="color:#f472b6;">Carlover Loveable app</strong> asks a question — four specialist agents wake up inside Daytona, fetch real data, and send a clear answer back.</p>
-</div>
-
-<!-- User -->
-<div class="node" style="border-color:#f472b6;box-shadow:0 0 0 1px rgba(244,114,182,0.2),0 0 28px rgba(244,114,182,0.08);">
-  <div class="icon">🚗</div>
-  <div>
-    <div style="color:#fff;">Carlover <span style="color:#f472b6;font-weight:700;">Loveable App</span></div>
-    <div class="sub">The car lover frontend — user types a question or uploads a photo</div>
+  <!-- Loveable App -->
+  <div class="app-node">
+    <div class="big-icon">🚗</div>
+    <div>
+      <div class="label">Carlover App</div>
+      <div class="sub">Built with Loveable</div>
+    </div>
   </div>
-</div>
 
-<!-- Arrow down -->
-<div class="connector">
-  <div class="conn-line"></div>
-  <div class="conn-dot"></div>
-  <div class="conn-label">Question arrives</div>
-  <div class="conn-line" style="background:linear-gradient(to bottom,#6366f1,#6366f1);"></div>
-</div>
-
-<!-- Daytona sandbox -->
-<div class="daytona">
-  <div class="daytona-badge">☁️ &nbsp;Daytona Sandbox</div>
-  <div class="daytona-intro">A secure, always-on cloud environment running the Carlover API</div>
-
-  <div class="parallel-note">All four agents run at the same time</div>
-
-  <div class="agents">
-
-    <!-- ADAC -->
-    <div class="agent agent-adac">
-      <div class="agent-top">
-        <div class="agent-emoji">📊</div>
-        <div class="agent-name">
-          ADAC Agent
-          <span>Breakdown Statistics</span>
-        </div>
-      </div>
-      <div class="agent-desc">
-        Looks up your car on ADAC's official database — Germany's largest annual breakdown survey. Returns real measured reliability scores, year by year.
-      </div>
-      <div class="agent-source">
-        <div class="dot"></div>
-        Data from adac.de — not estimates, actual survey data
-      </div>
-    </div>
-
-    <!-- Database -->
-    <div class="agent agent-db">
-      <div class="agent-top">
-        <div class="agent-emoji">🗄️</div>
-        <div class="agent-name">
-          Database Agent
-          <span>Workshop History</span>
-        </div>
-      </div>
-      <div class="agent-desc">
-        Checks your own workshop database for previous service cases, known weaknesses, and past repairs on the same model.
-      </div>
-      <div class="agent-source">
-        <div class="dot"></div>
-        Data from your private Supabase database
-      </div>
-    </div>
-
-    <!-- Image -->
-    <div class="agent agent-image">
-      <div class="agent-top">
-        <div class="agent-emoji">📷</div>
-        <div class="agent-name">
-          Image Agent
-          <span>Visual Inspection</span>
-        </div>
-      </div>
-      <div class="agent-desc">
-        If you upload a photo, it analyses the car — identifying warning lights, visible damage, and even which make and model it is.
-      </div>
-      <div class="agent-source">
-        <div class="dot"></div>
-        Powered by Qwen3 vision model via Featherless AI
-      </div>
-    </div>
-
-    <!-- Sandbox -->
-    <div class="agent agent-sandbox">
-      <div class="agent-top">
-        <div class="agent-emoji">🔧</div>
-        <div class="agent-name">
-          Sandbox Agent
-          <span>Diagnostic Code</span>
-        </div>
-      </div>
-      <div class="agent-desc">
-        Spins up a temporary isolated environment and runs diagnostic code — useful for complex fault analysis that needs computation.
-      </div>
-      <div class="agent-source">
-        <div class="dot"></div>
-        Runs in a separate ephemeral Daytona sandbox
-      </div>
-    </div>
-
+  <!-- Down arrow -->
+  <div class="arrow">
+    <div class="arrow-shaft"></div>
+    <div class="arrow-tip"></div>
+    <div class="arrow-tag">Question</div>
   </div>
-</div>
 
-<!-- Arrow up (response) -->
-<div class="connector">
-  <div class="conn-line" style="background:linear-gradient(to bottom,#22c55e,#22c55e);"></div>
-  <div class="conn-dot" style="background:#22c55e;box-shadow:0 0 10px #22c55e;"></div>
-  <div class="conn-label" style="color:#4ade80;">Answer ready</div>
-  <div class="conn-line" style="background:linear-gradient(to bottom,#22c55e,#1e3a28);"></div>
-</div>
+  <!-- Daytona -->
+  <div class="daytona">
+    <div class="daytona-label">☁️ &nbsp;Daytona Sandbox</div>
+    <div class="parallel-hint">4 agents · running in parallel</div>
 
-<!-- Answer -->
-<div class="answer-node" style="border-color:rgba(244,114,182,0.35);background:rgba(244,114,182,0.06);box-shadow:0 0 24px rgba(244,114,182,0.07);">
-  <div class="icon">✅</div>
-  <div>
-    <div>Carlover <span style="color:#f472b6;font-weight:700;">Loveable App</span> receives the answer</div>
-    <div class="sub" style="color:#f9a8d4;">Reliability data · known issues · vehicle image · ADAC source</div>
+    <div class="agents">
+      <div class="agent agent-adac">
+        <div class="a-icon">📊</div>
+        <div class="a-name">ADAC<br>Agent</div>
+        <div class="a-tag">Reliability</div>
+      </div>
+      <div class="agent agent-db">
+        <div class="a-icon">🗄️</div>
+        <div class="a-name">Database<br>Agent</div>
+        <div class="a-tag">History</div>
+      </div>
+      <div class="agent agent-image">
+        <div class="a-icon">📷</div>
+        <div class="a-name">Image<br>Agent</div>
+        <div class="a-tag">Vision</div>
+      </div>
+      <div class="agent agent-sandbox">
+        <div class="a-icon">🔧</div>
+        <div class="a-name">Sandbox<br>Agent</div>
+        <div class="a-tag">Diagnostics</div>
+      </div>
+    </div>
+
+    <!-- Data sources inside the box -->
+    <div class="sources">
+      <div class="source"><span class="s-icon">🏎️</span> ADAC.de</div>
+      <div class="source"><span class="s-icon">🧬</span> Qwen3 AI</div>
+      <div class="source"><span class="s-icon">🗃️</span> Supabase</div>
+      <div class="source"><span class="s-icon">⚡</span> Daytona API</div>
+    </div>
   </div>
-</div>
 
-<div class="footer">
-  <strong style="color:#475569">Carlover</strong> &nbsp;·&nbsp;
-  Deployed on <a href="https://daytona.io">Daytona</a> &nbsp;·&nbsp;
-  <a href="https://github.com/kaiser-data/carlover">github.com/kaiser-data/carlover</a>
-</div>
+  <!-- Up arrow -->
+  <div class="arrow arrow-up">
+    <div class="arrow-shaft"></div>
+    <div class="arrow-tip"></div>
+    <div class="arrow-tag">Answer</div>
+  </div>
 
+  <!-- Loveable App (bottom) -->
+  <div class="app-node">
+    <div class="big-icon">✅</div>
+    <div>
+      <div class="label">Carlover App</div>
+      <div class="sub">Displays result to user</div>
+    </div>
+  </div>
+
+</div>
 </body>
 </html>
