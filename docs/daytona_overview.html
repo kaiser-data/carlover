@@ -38,7 +38,7 @@
   /* ── Main horizontal row ── */
   .flow {
     width: 100%;
-    max-width: 1160px;
+    max-width: 1260px;
     display: flex;
     align-items: center;
     gap: 0;
@@ -47,7 +47,7 @@
   /* ── App node ── */
   .app-node {
     flex-shrink: 0;
-    width: 240px;
+    width: 220px;
     background: linear-gradient(160deg, #fdf4ff, #fce7f3);
     border: 2.5px solid #f472b6;
     border-radius: 26px;
@@ -59,31 +59,29 @@
     text-align: center;
     box-shadow: 0 8px 48px rgba(244,114,182,0.25), 0 2px 8px rgba(244,114,182,0.1);
   }
-  .app-node .big-icon { font-size: 52px; }
-  .app-node .label    { font-size: 19px; font-weight: 900; color: #0f172a; line-height: 1.2; }
+  .app-node .big-icon { font-size: 48px; }
+  .app-node .label    { font-size: 17px; font-weight: 900; color: #0f172a; line-height: 1.2; }
   .app-node .label span { color: #ec4899; }
 
-  /* ── Feature rows inside app node ── */
   .app-features {
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 7px;
   }
   .feat {
     background: #fff;
     border: 1px solid rgba(244,114,182,0.25);
-    border-radius: 12px;
-    padding: 9px 12px;
+    border-radius: 10px;
+    padding: 8px 10px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 9px;
     text-align: left;
-    box-shadow: 0 1px 3px rgba(244,114,182,0.08);
   }
-  .feat .f-icon { font-size: 20px; flex-shrink: 0; }
-  .feat .f-text { font-size: 12px; font-weight: 700; color: #1e293b; line-height: 1.3; }
-  .feat .f-sub  { font-size: 11px; font-weight: 400; color: #94a3b8; margin-top: 1px; }
+  .feat .f-icon { font-size: 18px; flex-shrink: 0; }
+  .feat .f-text { font-size: 11px; font-weight: 700; color: #1e293b; line-height: 1.3; }
+  .feat .f-sub  { font-size: 10px; font-weight: 400; color: #94a3b8; margin-top: 1px; }
 
   /* ── Bidirectional arrow ── */
   .bidir {
@@ -93,42 +91,17 @@
     align-items: center;
     gap: 6px;
     padding: 0 6px;
-    width: 90px;
+    width: 80px;
   }
-  .bidir-row {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    gap: 0;
-  }
-  .bidir-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    text-align: center;
-    width: 100%;
-  }
+  .bidir-row { display: flex; align-items: center; width: 100%; }
+  .bidir-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; text-align: center; width: 100%; }
   .bidir-label.ask  { color: #6366f1; }
   .bidir-label.resp { color: #16a34a; }
-  .shaft {
-    flex: 1;
-    height: 2px;
-  }
+  .shaft { flex: 1; height: 2px; }
   .shaft.ask  { background: linear-gradient(to right, #6366f1, #818cf8); }
   .shaft.resp { background: linear-gradient(to left, #16a34a, #4ade80); }
-  .tip-r {
-    width: 0; height: 0;
-    border-top: 5px solid transparent;
-    border-bottom: 5px solid transparent;
-    border-left: 8px solid #818cf8;
-  }
-  .tip-l {
-    width: 0; height: 0;
-    border-top: 5px solid transparent;
-    border-bottom: 5px solid transparent;
-    border-right: 8px solid #4ade80;
-  }
+  .tip-r { width:0; height:0; border-top:5px solid transparent; border-bottom:5px solid transparent; border-left:8px solid #818cf8; }
+  .tip-l { width:0; height:0; border-top:5px solid transparent; border-bottom:5px solid transparent; border-right:8px solid #4ade80; }
 
   /* ── Daytona box ── */
   .daytona {
@@ -136,8 +109,8 @@
     background: #f8faff;
     border: 2.5px solid #6366f1;
     border-radius: 32px;
-    padding: 42px 28px 32px;
-    box-shadow: 0 4px 32px rgba(99,102,241,0.12), 0 1px 0 rgba(99,102,241,0.08);
+    padding: 44px 24px 28px;
+    box-shadow: 0 4px 32px rgba(99,102,241,0.12);
     position: relative;
     display: flex;
     flex-direction: column;
@@ -145,103 +118,159 @@
   }
   .daytona-badge {
     position: absolute;
-    top: -17px;
-    left: 50%;
+    top: -17px; left: 50%;
     transform: translateX(-50%);
     background: #6366f1;
     color: #fff;
-    font-size: 13px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    padding: 6px 24px;
-    border-radius: 30px;
+    font-size: 12px; font-weight: 800;
+    letter-spacing: 2px; text-transform: uppercase;
+    padding: 6px 24px; border-radius: 30px;
     box-shadow: 0 4px 24px rgba(99,102,241,0.5);
     white-space: nowrap;
   }
-  .parallel-hint {
-    text-align: center;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
+
+  /* ── Phase label ── */
+  .phase-label {
+    font-size: 10px; font-weight: 800;
+    letter-spacing: 2px; text-transform: uppercase;
     color: #94a3b8;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
+    padding-left: 4px;
+  }
+  .phase-label span {
+    display: inline-block;
+    background: #e0e7ff;
+    color: #6366f1;
+    border-radius: 5px;
+    padding: 2px 8px;
+    margin-right: 6px;
+    font-size: 10px;
+  }
+  .phase-label span.green { background: #dcfce7; color: #16a34a; }
+  .phase-label span.amber { background: #fef3c7; color: #d97706; }
+
+  /* ── Phase divider arrow ── */
+  .phase-arrow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 6px 0;
+    color: #cbd5e1;
+    font-size: 18px;
   }
 
-  /* ── Agent cards ── */
-  .agents {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-    margin-bottom: 26px;
+  /* ── Orchestrator row ── */
+  .orch-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    background: #fff;
+    border: 1.5px solid #e0e7ff;
+    border-radius: 16px;
+    padding: 14px 16px;
   }
-  .agent {
-    border-radius: 18px;
-    padding: 22px 12px 18px;
+  .orch-step {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 5px;
+    text-align: center;
+  }
+  .orch-step .o-icon { font-size: 24px; }
+  .orch-step .o-name { font-size: 12px; font-weight: 800; color: #0f172a; }
+  .orch-step .o-sub  { font-size: 10px; color: #64748b; line-height: 1.3; }
+  .orch-sep {
+    width: 24px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #c7d2fe; font-size: 16px; font-weight: 900;
+  }
+
+  /* ── Parallel agents ── */
+  .agents {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
     gap: 10px;
+    margin-bottom: 6px;
+  }
+  .agent {
+    border-radius: 14px;
+    padding: 16px 8px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
     text-align: center;
     border: 2px solid var(--c-dim);
     background: var(--c-bg);
   }
-  .agent .a-icon { font-size: 38px; line-height: 1; }
-  .agent .a-name { font-size: 15px; font-weight: 800; color: #0f172a; line-height: 1.25; }
+  .agent .a-icon { font-size: 30px; line-height: 1; }
+  .agent .a-name { font-size: 12px; font-weight: 800; color: #0f172a; line-height: 1.25; }
   .agent .a-tag  {
-    font-size: 12px; font-weight: 700;
-    color: var(--c);
-    background: var(--c-dim);
-    border-radius: 7px;
-    padding: 3px 10px;
+    font-size: 10px; font-weight: 700;
+    color: var(--c); background: var(--c-dim);
+    border-radius: 6px; padding: 2px 8px;
   }
+  .agent .a-sub  { font-size: 10px; color: #94a3b8; line-height: 1.2; }
   .agent-adac    { --c: #d97706; --c-bg: rgba(251,191,36,0.10);  --c-dim: rgba(251,191,36,0.20);  }
   .agent-db      { --c: #059669; --c-bg: rgba(52,211,153,0.10);  --c-dim: rgba(52,211,153,0.20);  }
   .agent-image   { --c: #0284c7; --c-bg: rgba(56,189,248,0.10);  --c-dim: rgba(56,189,248,0.20);  }
   .agent-sandbox { --c: #7c3aed; --c-bg: rgba(192,132,252,0.10); --c-dim: rgba(192,132,252,0.20); }
 
+  /* ── Answer agent ── */
+  .answer-row {
+    background: #fff;
+    border: 1.5px solid #dcfce7;
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 6px;
+  }
+  .answer-icon { font-size: 30px; flex-shrink: 0; }
+  .answer-text .a-name { font-size: 13px; font-weight: 800; color: #0f172a; }
+  .answer-text .a-sub  { font-size: 11px; color: #64748b; margin-top: 2px; }
+  .answer-badge {
+    margin-left: auto; flex-shrink: 0;
+    background: #dcfce7; color: #16a34a;
+    font-size: 10px; font-weight: 800;
+    border-radius: 6px; padding: 3px 10px;
+    letter-spacing: 0.5px;
+  }
+
   /* ── Data sources ── */
   .sources {
     display: flex;
-    gap: 8px;
+    gap: 7px;
     justify-content: center;
     flex-wrap: wrap;
     border-top: 1px solid #e2e8f0;
-    padding-top: 20px;
+    padding-top: 16px;
+    margin-top: 4px;
   }
   .source {
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 8px 14px;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 12px;
-    font-weight: 600;
-    color: #64748b;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 9px; padding: 6px 12px;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 600; color: #64748b;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   }
-  .source .s-icon { font-size: 16px; }
+  .source .s-icon { font-size: 14px; }
   .source.hi { border-color: rgba(99,102,241,0.3); color: #6366f1; }
   .source.hi strong { color: #4f46e5; }
 
   /* ── Footer ── */
-  .footer {
-    margin-top: 32px;
-    font-size: 12px;
-    color: #cbd5e1;
-    text-align: center;
-  }
+  .footer { margin-top: 32px; font-size: 12px; color: #cbd5e1; text-align: center; }
   .footer a { color: #94a3b8; text-decoration: none; }
 
-  /* ── Responsive: stack vertically on small screens ── */
-  @media (max-width: 760px) {
+  @media (max-width: 800px) {
     .flow { flex-direction: column; }
     .bidir { flex-direction: row; width: auto; gap: 12px; }
     .agents { grid-template-columns: repeat(2, 1fr); }
     .app-node { width: 100%; }
+    .orch-row { flex-wrap: wrap; }
   }
 </style>
 </head>
@@ -249,7 +278,7 @@
 
 <div class="title">
   <h1>CarLover on <em class="loveable">Loveable</em> and <em>Daytona</em></h1>
-  <p>Question in → four agents fetch real data → answer out</p>
+  <p>Question in → orchestrator routes → agents run in parallel → answer out</p>
 </div>
 
 <div class="flow">
@@ -258,7 +287,6 @@
   <div class="app-node">
     <div class="big-icon">🚗</div>
     <div class="label">Carlover<br><span>Loveable App</span></div>
-
     <div class="app-features">
       <div class="feat">
         <div class="f-icon">💬</div>
@@ -299,45 +327,85 @@
     <div class="bidir-label resp">← Answer</div>
   </div>
 
-  <!-- CENTER: Daytona -->
+  <!-- RIGHT: Daytona -->
   <div class="daytona">
     <div class="daytona-badge">☁️ &nbsp; Daytona Sandbox</div>
-    <div class="parallel-hint">4 agents · running in parallel</div>
 
-    <div class="agents">
-      <div class="agent agent-adac">
-        <div class="a-icon">📊</div>
-        <div class="a-name">ADAC<br>Agent</div>
-        <div class="a-tag">Reliability</div>
+    <!-- Phase 1: Orchestrator -->
+    <div class="phase-label"><span>Phase 1</span> Orchestrator · sequential</div>
+    <div class="orch-row">
+      <div class="orch-step">
+        <div class="o-icon">🎯</div>
+        <div class="o-name">Classify Intent</div>
+        <div class="o-sub">diagnosis / lookup / image / code</div>
       </div>
-      <div class="agent agent-db">
-        <div class="a-icon">🗄️</div>
-        <div class="a-name">Database<br>Agent</div>
-        <div class="a-tag">History</div>
+      <div class="orch-sep">›</div>
+      <div class="orch-step">
+        <div class="o-icon">🔍</div>
+        <div class="o-name">Extract Entities</div>
+        <div class="o-sub">make · model · year · issue</div>
       </div>
-      <div class="agent agent-image">
-        <div class="a-icon">📷</div>
-        <div class="a-name">Image<br>Agent</div>
-        <div class="a-tag">Vision</div>
-      </div>
-      <div class="agent agent-sandbox">
-        <div class="a-icon">🔧</div>
-        <div class="a-name">Sandbox<br>Agent</div>
-        <div class="a-tag">Diagnostics</div>
+      <div class="orch-sep">›</div>
+      <div class="orch-step">
+        <div class="o-icon">⚡</div>
+        <div class="o-name">Route Agents</div>
+        <div class="o-sub">selects which agents to run</div>
       </div>
     </div>
 
+    <!-- Phase 2: Parallel agents -->
+    <div class="phase-arrow">↓</div>
+    <div class="phase-label"><span class="amber">Phase 2</span> Sub-agents · parallel</div>
+    <div class="agents">
+      <div class="agent agent-adac">
+        <div class="a-icon">📊</div>
+        <div class="a-name">ADAC Agent</div>
+        <div class="a-tag">Reliability</div>
+        <div class="a-sub">breakdown stats<br>known issues</div>
+      </div>
+      <div class="agent agent-db">
+        <div class="a-icon">🗄️</div>
+        <div class="a-name">Database Agent</div>
+        <div class="a-tag">History</div>
+        <div class="a-sub">service cases<br>user data</div>
+      </div>
+      <div class="agent agent-image">
+        <div class="a-icon">📷</div>
+        <div class="a-name">Image Agent</div>
+        <div class="a-tag">Vision</div>
+        <div class="a-sub">Qwen3-VL<br>damage · lights</div>
+      </div>
+      <div class="agent agent-sandbox">
+        <div class="a-icon">🔧</div>
+        <div class="a-name">Sandbox Agent</div>
+        <div class="a-tag">Diagnostics</div>
+        <div class="a-sub">ephemeral sandbox<br>safe code run</div>
+      </div>
+    </div>
+
+    <!-- Phase 3: Answer -->
+    <div class="phase-arrow">↓</div>
+    <div class="phase-label"><span class="green">Phase 3</span> Synthesis · final answer</div>
+    <div class="answer-row">
+      <div class="answer-icon">✍️</div>
+      <div class="answer-text">
+        <div class="a-name">Answer Agent</div>
+        <div class="a-sub">Merges all agent results · cites sources · flags uncertainty · Qwen2.5-72B</div>
+      </div>
+      <div class="answer-badge">LLM Synthesized</div>
+    </div>
+
+    <!-- Data sources -->
     <div class="sources">
       <div class="source"><span class="s-icon">🏎️</span> ADAC.de</div>
       <div class="source hi">
         <span class="s-icon">🧬</span>
-        <strong>Featherless AI</strong>&nbsp;·&nbsp;30,000+ models&nbsp;·&nbsp;Qwen3-VL &amp; Qwen2.5
+        <strong>Featherless AI</strong>&nbsp;·&nbsp;Qwen3-VL &amp; Qwen2.5
       </div>
       <div class="source"><span class="s-icon">🗃️</span> Supabase</div>
       <div class="source"><span class="s-icon">⚡</span> Daytona API</div>
     </div>
   </div>
-
 
 </div>
 
