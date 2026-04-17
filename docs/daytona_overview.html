@@ -3,541 +3,394 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Carlover — Daytona Deployment Overview</title>
+<title>Carlover on Daytona</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --bg:        #0b0e1a;
-    --surface:   #131729;
-    --card:      #1a1f35;
-    --border:    #252c48;
-    --accent:    #6366f1;
-    --accent2:   #818cf8;
-    --green:     #22c55e;
-    --amber:     #f59e0b;
-    --blue:      #38bdf8;
-    --purple:    #a78bfa;
-    --pink:      #f472b6;
-    --text:      #e2e8f0;
-    --muted:     #64748b;
-    --radius:    14px;
-  }
-
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', -apple-system, sans-serif;
+    background: #080b14;
+    color: #e2e8f0;
+    font-family: 'Inter', sans-serif;
     min-height: 100vh;
-    padding: 48px 24px 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 56px 24px 72px;
   }
 
-  /* ── Header ── */
-  .header {
+  /* ── Title ── */
+  .title {
     text-align: center;
-    margin-bottom: 56px;
+    margin-bottom: 52px;
   }
-  .header .eyebrow {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    color: var(--accent2);
-    margin-bottom: 12px;
-  }
-  .header h1 {
-    font-size: clamp(28px, 5vw, 46px);
-    font-weight: 800;
-    letter-spacing: -1px;
-    line-height: 1.1;
+  .title h1 {
+    font-size: clamp(26px, 4vw, 40px);
+    font-weight: 900;
+    letter-spacing: -0.5px;
     color: #fff;
+    margin-bottom: 10px;
   }
-  .header h1 span { color: var(--accent2); }
-  .header p {
-    margin-top: 14px;
-    font-size: 16px;
-    color: var(--muted);
-    max-width: 560px;
-    margin-inline: auto;
+  .title h1 em {
+    font-style: normal;
+    color: #818cf8;
+  }
+  .title p {
+    font-size: 15px;
+    color: #64748b;
+    max-width: 480px;
+    margin: 0 auto;
     line-height: 1.6;
   }
 
-  /* ── Layout ── */
-  .diagram {
-    max-width: 960px;
-    margin: 0 auto;
+  /* ── Top node (user) ── */
+  .node {
+    background: #131929;
+    border: 1.5px solid #252c48;
+    border-radius: 16px;
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #e2e8f0;
+  }
+  .node .icon { font-size: 24px; }
+  .node .sub  { font-size: 12px; font-weight: 400; color: #64748b; margin-top: 1px; }
+
+  /* ── Connector ── */
+  .connector {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 0;
-    align-items: center;
+    margin: 4px 0;
   }
-
-  /* ── Layers ── */
-  .layer {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .layer-label {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 10px;
-    align-self: flex-start;
-    padding-left: 4px;
-  }
-
-  /* ── Cards ── */
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px 22px;
-    position: relative;
-  }
-
-  .card.accent-border { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 32px rgba(99,102,241,0.12); }
-  .card.green-border  { border-color: var(--green);  box-shadow: 0 0 0 1px var(--green),  0 0 28px rgba(34,197,94,0.10); }
-  .card.blue-border   { border-color: var(--blue);   box-shadow: 0 0 0 1px var(--blue),   0 0 28px rgba(56,189,248,0.10); }
-
-  /* ── Client row ── */
-  .client-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    width: 100%;
-    max-width: 560px;
-  }
-  .client-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    text-align: center;
-  }
-  .client-card .icon { font-size: 32px; margin-bottom: 10px; }
-  .client-card .title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-  .client-card .sub   { font-size: 12px; color: var(--muted); line-height: 1.5; }
-
-  /* ── Arrow ── */
-  .arrow-block {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    padding: 6px 0;
-  }
-  .arrow-line {
+  .conn-line {
     width: 2px;
-    height: 28px;
-    background: linear-gradient(to bottom, var(--border), var(--accent));
-    border-radius: 1px;
+    height: 32px;
+    background: linear-gradient(to bottom, #252c48, #6366f1);
   }
-  .arrow-head {
-    width: 0;
-    height: 0;
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-    border-top: 9px solid var(--accent);
+  .conn-dot {
+    width: 8px;
+    height: 8px;
+    background: #6366f1;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #6366f1;
   }
-  .arrow-label {
+  .conn-label {
     font-size: 11px;
-    color: var(--accent2);
     font-weight: 500;
+    color: #818cf8;
+    margin-top: 4px;
     letter-spacing: 0.3px;
-    position: absolute;
-    white-space: nowrap;
-    left: calc(50% + 14px);
-    transform: translateY(-22px);
   }
-  .arrow-block { position: relative; }
 
-  /* ── Daytona sandbox box ── */
-  .sandbox {
+  /* ── Daytona box ── */
+  .daytona {
     width: 100%;
-    background: linear-gradient(145deg, #131c35 0%, #0f1628 100%);
-    border: 1.5px solid var(--accent);
-    border-radius: 20px;
-    padding: 28px 28px 32px;
-    box-shadow: 0 0 0 1px rgba(99,102,241,0.15), 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04);
+    max-width: 780px;
+    border: 2px solid #6366f1;
+    border-radius: 24px;
+    padding: 32px 28px 28px;
+    background: linear-gradient(160deg, #0f1528 0%, #0a0e1e 100%);
+    box-shadow:
+      0 0 0 1px rgba(99,102,241,0.2),
+      0 32px 80px rgba(0,0,0,0.6),
+      inset 0 1px 0 rgba(255,255,255,0.04);
     position: relative;
   }
-  .sandbox-badge {
+
+  .daytona-badge {
     position: absolute;
-    top: -13px;
+    top: -14px;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--accent);
+    background: #6366f1;
     color: #fff;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    padding: 4px 14px;
-    border-radius: 20px;
-    white-space: nowrap;
-  }
-  .sandbox-sub {
-    text-align: center;
-    font-size: 11px;
-    color: var(--muted);
-    margin-bottom: 24px;
-    margin-top: 4px;
-  }
-
-  /* ── API routes strip ── */
-  .routes-strip {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-bottom: 28px;
-  }
-  .route-pill {
-    background: rgba(99,102,241,0.1);
-    border: 1px solid rgba(99,102,241,0.3);
-    border-radius: 8px;
-    padding: 6px 12px;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--accent2);
-    font-family: 'Menlo', 'Monaco', monospace;
-  }
-  .route-pill .method {
-    color: var(--green);
-    margin-right: 4px;
-  }
-  .routes-label {
-    text-align: center;
-    font-size: 10px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 10px;
-  }
-
-  /* ── Pipeline steps ── */
-  .pipeline {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    width: 100%;
-  }
-  .step {
-    flex: 1;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px 12px;
-    text-align: center;
-    transition: border-color 0.2s;
-  }
-  .step .step-icon { font-size: 26px; margin-bottom: 8px; }
-  .step .step-num {
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 1px;
     text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 4px;
+    padding: 5px 18px;
+    border-radius: 20px;
+    white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(99,102,241,0.5);
   }
-  .step .step-title {
+
+  .daytona-intro {
+    text-align: center;
     font-size: 13px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 5px;
-    line-height: 1.3;
-  }
-  .step .step-desc {
-    font-size: 11px;
-    color: var(--muted);
-    line-height: 1.5;
-  }
-  .step-arrow {
-    flex-shrink: 0;
-    width: 28px;
-    text-align: center;
-    color: var(--muted);
-    font-size: 16px;
+    color: #475569;
+    margin-bottom: 28px;
+    margin-top: 6px;
   }
 
-  /* Step accent colors */
-  .step-1 { border-color: #6366f1; }
-  .step-1 .step-icon { filter: hue-rotate(0deg); }
-  .step-2 { border-color: #38bdf8; }
-  .step-3 { border-color: #22c55e; }
-  .step-4 { border-color: #a78bfa; }
-  .step-5 { border-color: #f472b6; }
-
-  /* ── Parallel agents box ── */
-  .agents-section {
-    margin-top: 24px;
-    border: 1px dashed var(--border);
-    border-radius: 12px;
-    padding: 18px 16px 16px;
-    position: relative;
-  }
-  .agents-label {
-    position: absolute;
-    top: -10px;
-    left: 16px;
-    background: var(--surface);
-    padding: 0 8px;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-  .agents-grid {
+  /* ── Agents grid ── */
+  .agents {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-  }
-  .agent-card {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 10px;
-    text-align: center;
-  }
-  .agent-card .a-icon { font-size: 22px; margin-bottom: 6px; }
-  .agent-card .a-name { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
-  .agent-card .a-desc { font-size: 10px; color: var(--muted); line-height: 1.4; }
-
-  /* ── Data sources row ── */
-  .sources-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr 1fr;
     gap: 14px;
-    width: 100%;
-  }
-  .source-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px 16px;
-    text-align: center;
-  }
-  .source-card .s-icon { font-size: 28px; margin-bottom: 10px; }
-  .source-card .s-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-  .source-card .s-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
-  .source-card .s-tag  {
-    display: inline-block;
-    margin-top: 8px;
-    font-size: 10px;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 4px;
-    background: rgba(99,102,241,0.12);
-    color: var(--accent2);
   }
 
-  /* ── Response arrow (back up) ── */
-  .response-arrow {
+  .agent {
+    background: #131929;
+    border: 1px solid #1e2640;
+    border-radius: 16px;
+    padding: 22px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .agent:hover {
+    border-color: var(--c);
+    box-shadow: 0 0 24px rgba(var(--cr), 0.12);
+  }
+
+  .agent-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .agent-emoji {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(var(--cr), 0.1);
+    border: 1px solid rgba(var(--cr), 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+  .agent-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+  }
+  .agent-name span {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--c);
+    margin-top: 2px;
+    letter-spacing: 0.3px;
+  }
+  .agent-desc {
+    font-size: 13px;
+    color: #8892a4;
+    line-height: 1.55;
+    flex: 1;
+  }
+  .agent-source {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #475569;
+    padding-top: 12px;
+    border-top: 1px solid #1a1f35;
+  }
+  .agent-source .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--c);
+    flex-shrink: 0;
+  }
+
+  /* Per-agent colors */
+  .agent-adac     { --c: #f59e0b; --cr: 245,158,11; }
+  .agent-db       { --c: #22c55e; --cr: 34,197,94;  }
+  .agent-image    { --c: #38bdf8; --cr: 56,189,248;  }
+  .agent-sandbox  { --c: #a78bfa; --cr: 167,139,250; }
+
+  /* ── Parallel badge ── */
+  .parallel-note {
+    text-align: center;
+    font-size: 11px;
+    color: #3d4a6b;
+    margin-bottom: 18px;
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 0 4px;
-    font-size: 12px;
-    color: var(--green);
-    font-weight: 500;
+    justify-content: center;
   }
-  .response-arrow::before, .response-arrow::after {
+  .parallel-note::before, .parallel-note::after {
     content: '';
     flex: 1;
     height: 1px;
-    background: linear-gradient(to right, transparent, var(--green), transparent);
+    background: #1a1f35;
   }
 
-  /* ── Footer ── */
+  /* ── Bottom connector + answer ── */
+  .answer-node {
+    background: rgba(34,197,94,0.08);
+    border: 1.5px solid rgba(34,197,94,0.35);
+    border-radius: 16px;
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #e2e8f0;
+    box-shadow: 0 0 24px rgba(34,197,94,0.08);
+  }
+  .answer-node .icon { font-size: 24px; }
+  .answer-node .sub  { font-size: 12px; font-weight: 400; color: #4ade80; margin-top: 1px; }
+
+  /* ── Bottom note ── */
   .footer {
+    margin-top: 40px;
     text-align: center;
-    margin-top: 52px;
     font-size: 12px;
-    color: var(--muted);
-    line-height: 1.8;
+    color: #2d3a54;
+    line-height: 1.9;
   }
-  .footer a { color: var(--accent2); text-decoration: none; }
+  .footer a { color: #6366f1; text-decoration: none; }
 
-  /* ── Responsive ── */
-  @media (max-width: 680px) {
-    .pipeline { flex-direction: column; }
-    .step-arrow { transform: rotate(90deg); }
-    .agents-grid { grid-template-columns: repeat(2, 1fr); }
-    .sources-row { grid-template-columns: 1fr; }
-    .client-row  { grid-template-columns: 1fr; max-width: 320px; }
+  @media (max-width: 560px) {
+    .agents { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
 
-<!-- ── Header ── -->
-<div class="header">
-  <div class="eyebrow">Deployment Architecture</div>
-  <h1>How <span>Carlover</span> Works</h1>
-  <p>A question about your car travels through five steps — from your browser to real German automotive data and back — all running inside a secure Daytona cloud sandbox.</p>
+<div class="title">
+  <h1>Carlover runs on <em>Daytona</em></h1>
+  <p>Ask a question about your car — four specialist agents wake up, fetch real data, and return a clear answer.</p>
 </div>
 
-<div class="diagram">
-
-  <!-- ── 1. CLIENT ── -->
-  <div class="layer">
-    <div class="layer-label">You</div>
-    <div class="client-row">
-      <div class="client-card">
-        <div class="icon">🌐</div>
-        <div class="title">Browser App</div>
-        <div class="sub">Built with Loveable or any web framework</div>
-      </div>
-      <div class="client-card">
-        <div class="icon">📱</div>
-        <div class="title">Mobile / API</div>
-        <div class="sub">Any app calling the REST API directly</div>
-      </div>
-    </div>
+<!-- User -->
+<div class="node">
+  <div class="icon">👤</div>
+  <div>
+    <div>Your App or Browser</div>
+    <div class="sub">Sends a question about a vehicle</div>
   </div>
-
-  <!-- ── Arrow down ── -->
-  <div class="arrow-block" style="margin:2px 0;">
-    <div class="arrow-line"></div>
-    <div class="arrow-head"></div>
-    <span class="arrow-label">Your question</span>
-  </div>
-
-  <!-- ── 2. DAYTONA SANDBOX ── -->
-  <div class="layer" style="width:100%;">
-    <div class="sandbox">
-      <div class="sandbox-badge">☁️ &nbsp; Daytona Cloud Sandbox</div>
-      <div class="sandbox-sub">Isolated Python environment · always-on · auto-scaled</div>
-
-      <!-- API routes -->
-      <div class="routes-label">API endpoints</div>
-      <div class="routes-strip">
-        <div class="route-pill"><span class="method">POST</span>/chat</div>
-        <div class="route-pill"><span class="method">POST</span>/vehicle/lookup</div>
-        <div class="route-pill"><span class="method">POST</span>/image/analyze</div>
-        <div class="route-pill"><span class="method">GET</span>/health</div>
-      </div>
-
-      <!-- Pipeline steps -->
-      <div class="pipeline">
-        <div class="step step-1">
-          <div class="step-icon">🎯</div>
-          <div class="step-num">Step 1</div>
-          <div class="step-title">Understand</div>
-          <div class="step-desc">Reads your question and decides what you're asking about</div>
-        </div>
-        <div class="step-arrow">→</div>
-        <div class="step step-2">
-          <div class="step-icon">🔍</div>
-          <div class="step-num">Step 2</div>
-          <div class="step-title">Identify Vehicle</div>
-          <div class="step-desc">Extracts make, model &amp; year — even with typos</div>
-        </div>
-        <div class="step-arrow">→</div>
-        <div class="step step-3">
-          <div class="step-icon">⚡</div>
-          <div class="step-num">Step 3</div>
-          <div class="step-title">Research</div>
-          <div class="step-desc">Runs specialist agents in parallel to fetch real data</div>
-        </div>
-        <div class="step-arrow">→</div>
-        <div class="step step-4">
-          <div class="step-icon">🧠</div>
-          <div class="step-num">Step 4</div>
-          <div class="step-title">Synthesise</div>
-          <div class="step-desc">AI combines all findings into one clear answer</div>
-        </div>
-        <div class="step-arrow">→</div>
-        <div class="step step-5">
-          <div class="step-icon">✉️</div>
-          <div class="step-num">Step 5</div>
-          <div class="step-title">Respond</div>
-          <div class="step-desc">Structured JSON returned to your app instantly</div>
-        </div>
-      </div>
-
-      <!-- Parallel agents -->
-      <div class="agents-section">
-        <div class="agents-label">Specialist Agents — run in parallel at Step 3</div>
-        <div class="agents-grid">
-          <div class="agent-card">
-            <div class="a-icon">📊</div>
-            <div class="a-name">ADAC Agent</div>
-            <div class="a-desc">Fetches official German breakdown statistics &amp; defect data</div>
-          </div>
-          <div class="agent-card">
-            <div class="a-icon">🗄️</div>
-            <div class="a-name">Database Agent</div>
-            <div class="a-desc">Looks up past service cases from your own database</div>
-          </div>
-          <div class="agent-card">
-            <div class="a-icon">📷</div>
-            <div class="a-name">Image Agent</div>
-            <div class="a-desc">Analyses a car photo — detects warning lights &amp; damage</div>
-          </div>
-          <div class="agent-card">
-            <div class="a-icon">🔧</div>
-            <div class="a-name">Sandbox Agent</div>
-            <div class="a-desc">Runs diagnostic code in an isolated environment</div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ── Arrow down to sources ── -->
-  <div class="arrow-block" style="margin:2px 0;">
-    <div class="arrow-line"></div>
-    <div class="arrow-head"></div>
-    <span class="arrow-label" style="color:var(--blue)">Live data fetch</span>
-  </div>
-
-  <!-- ── 3. DATA SOURCES ── -->
-  <div class="layer">
-    <div class="layer-label">External Data</div>
-    <div class="sources-row">
-      <div class="source-card">
-        <div class="s-icon">🏎️</div>
-        <div class="s-name">ADAC.de</div>
-        <div class="s-desc">Germany's largest automobile club. Real measured breakdown statistics for every car model — not estimates.</div>
-        <div class="s-tag">adac.de · Pannenstatistik</div>
-      </div>
-      <div class="source-card">
-        <div class="s-icon">🧬</div>
-        <div class="s-name">AI Language Model</div>
-        <div class="s-desc">Qwen / Featherless AI. Understands questions, analyses images, and writes the final answer in plain English.</div>
-        <div class="s-tag">featherless.ai · Qwen3</div>
-      </div>
-      <div class="source-card">
-        <div class="s-icon">🗃️</div>
-        <div class="s-name">Your Database</div>
-        <div class="s-desc">Supabase Postgres. Stores your workshop's own service history, known weaknesses, and past repairs.</div>
-        <div class="s-tag">supabase.com · Postgres</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Response arrow back up ── -->
-  <div class="response-arrow" style="width:100%;max-width:560px;margin-top:16px;">
-    ✅ &nbsp; Structured answer returned to your app
-  </div>
-
 </div>
 
-<!-- ── Footer ── -->
+<!-- Arrow down -->
+<div class="connector">
+  <div class="conn-line"></div>
+  <div class="conn-dot"></div>
+  <div class="conn-label">Question arrives</div>
+  <div class="conn-line" style="background:linear-gradient(to bottom,#6366f1,#6366f1);"></div>
+</div>
+
+<!-- Daytona sandbox -->
+<div class="daytona">
+  <div class="daytona-badge">☁️ &nbsp;Daytona Sandbox</div>
+  <div class="daytona-intro">A secure, always-on cloud environment running the Carlover API</div>
+
+  <div class="parallel-note">All four agents run at the same time</div>
+
+  <div class="agents">
+
+    <!-- ADAC -->
+    <div class="agent agent-adac">
+      <div class="agent-top">
+        <div class="agent-emoji">📊</div>
+        <div class="agent-name">
+          ADAC Agent
+          <span>Breakdown Statistics</span>
+        </div>
+      </div>
+      <div class="agent-desc">
+        Looks up your car on ADAC's official database — Germany's largest annual breakdown survey. Returns real measured reliability scores, year by year.
+      </div>
+      <div class="agent-source">
+        <div class="dot"></div>
+        Data from adac.de — not estimates, actual survey data
+      </div>
+    </div>
+
+    <!-- Database -->
+    <div class="agent agent-db">
+      <div class="agent-top">
+        <div class="agent-emoji">🗄️</div>
+        <div class="agent-name">
+          Database Agent
+          <span>Workshop History</span>
+        </div>
+      </div>
+      <div class="agent-desc">
+        Checks your own workshop database for previous service cases, known weaknesses, and past repairs on the same model.
+      </div>
+      <div class="agent-source">
+        <div class="dot"></div>
+        Data from your private Supabase database
+      </div>
+    </div>
+
+    <!-- Image -->
+    <div class="agent agent-image">
+      <div class="agent-top">
+        <div class="agent-emoji">📷</div>
+        <div class="agent-name">
+          Image Agent
+          <span>Visual Inspection</span>
+        </div>
+      </div>
+      <div class="agent-desc">
+        If you upload a photo, it analyses the car — identifying warning lights, visible damage, and even which make and model it is.
+      </div>
+      <div class="agent-source">
+        <div class="dot"></div>
+        Powered by Qwen3 vision model via Featherless AI
+      </div>
+    </div>
+
+    <!-- Sandbox -->
+    <div class="agent agent-sandbox">
+      <div class="agent-top">
+        <div class="agent-emoji">🔧</div>
+        <div class="agent-name">
+          Sandbox Agent
+          <span>Diagnostic Code</span>
+        </div>
+      </div>
+      <div class="agent-desc">
+        Spins up a temporary isolated environment and runs diagnostic code — useful for complex fault analysis that needs computation.
+      </div>
+      <div class="agent-source">
+        <div class="dot"></div>
+        Runs in a separate ephemeral Daytona sandbox
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Arrow up (response) -->
+<div class="connector">
+  <div class="conn-line" style="background:linear-gradient(to bottom,#22c55e,#22c55e);"></div>
+  <div class="conn-dot" style="background:#22c55e;box-shadow:0 0 10px #22c55e;"></div>
+  <div class="conn-label" style="color:#4ade80;">Answer ready</div>
+  <div class="conn-line" style="background:linear-gradient(to bottom,#22c55e,#1e3a28);"></div>
+</div>
+
+<!-- Answer -->
+<div class="answer-node">
+  <div class="icon">✅</div>
+  <div>
+    <div>Structured Answer</div>
+    <div class="sub">Reliability data · known issues · vehicle image · ADAC source</div>
+  </div>
+</div>
+
 <div class="footer">
-  <strong style="color:var(--text)">Carlover</strong> — Automotive AI powered by ADAC data &amp; Featherless AI &nbsp;·&nbsp;
-  Deployed on <a href="https://daytona.io" target="_blank">Daytona</a> &nbsp;·&nbsp;
-  Source: <a href="https://github.com/kaiser-data/carlover" target="_blank">github.com/kaiser-data/carlover</a>
+  <strong style="color:#475569">Carlover</strong> &nbsp;·&nbsp;
+  Deployed on <a href="https://daytona.io">Daytona</a> &nbsp;·&nbsp;
+  <a href="https://github.com/kaiser-data/carlover">github.com/kaiser-data/carlover</a>
 </div>
 
 </body>
