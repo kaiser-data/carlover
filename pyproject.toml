@@ -1,0 +1,40 @@
+[project]
+name = "carlover"
+version = "0.1.0"
+description = "Automotive Assistant Multi-Agent Backend"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.0",
+    "pydantic-settings>=2.0",
+    "langgraph>=0.2",
+    "langchain-core>=0.3",
+    "langchain-openai>=0.2",
+    "supabase>=2.0",
+    "postgrest>=0.16",
+    "openai>=1.0",
+    "python-multipart>=0.0.9",
+    "loguru>=0.7",
+    "python-dotenv>=1.0",
+    "httpx>=0.27",
+    "daytona-sdk>=0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "httpx>=0.27",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
