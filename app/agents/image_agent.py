@@ -115,12 +115,17 @@ async def run_image_agent(state: CarAssistantState) -> ImageAgentOutput:
         try:
             count_msg = await llm.ainvoke([
                 SystemMessage(
-                    "You are a vehicle counter. Look at the image and count only the "
-                    "PROMINENT cars clearly visible in the foreground — ignore distant "
-                    "background traffic. Reply with EXACTLY one integer and nothing else."
+                    "You are a vehicle counter. Count only LARGE prominent cars in the "
+                    "foreground — cars that are close to the camera and clearly the main "
+                    "subjects. Ignore small or distant background cars.\n"
+                    "EXAMPLES:\n"
+                    "- One car fills most of the frame → reply: 1\n"
+                    "- Two cars side by side both large and close → reply: 2\n"
+                    "- One main car + tiny distant cars → reply: 1\n"
+                    "Reply with ONLY a single digit: 0, 1, 2, or 3. No other text."
                 ),
                 HumanMessage(content=[
-                    {"type": "text", "text": "How many prominent foreground cars?"},
+                    {"type": "text", "text": "How many prominent foreground cars are in this image? Reply with one digit only."},
                     img_block,
                 ]),
             ])
@@ -157,10 +162,33 @@ async def run_image_agent(state: CarAssistantState) -> ImageAgentOutput:
             HumanMessage(content=content),
         ])
 
-        # ── Post-processing: enforce pre-count if model ignored it ──
+        # ── Post-processing layer 1: enforce pre-count if model ignored it ──
         if pre_count > 1 and result.vehicle_count <= 1:
             logger.info(f"image_agent: enforcing pre_count {pre_count} (model returned {result.vehicle_count})")
             result = result.model_copy(update={"vehicle_count": pre_count, "needs_clarification": True})
+
+        # ── Post-processing layer 2: bounding-box count override ──
+        if len(result.vehicle_boxes) >= 2 and result.vehicle_count <= 1:
+            logger.info(f"image_agent: bounding-box count {len(result.vehicle_boxes)} overrides vehicle_count={result.vehicle_count}")
+            result = result.model_copy(update={"vehicle_count": len(result.vehicle_boxes), "needs_clarification": True})
+
+        # ── Post-processing layer 3: text heuristic scan ──
+        # Catches models that describe multiple cars in observations but don't set vehicle_count
+        _MULTI_CAR_PHRASES = [
+            "two cars", "two vehicles", "both cars", "both vehicles",
+            "car on the left", "car on the right", "left car", "right car",
+            "left vehicle", "right vehicle", "first car", "second car",
+            "another car", "another vehicle",
+        ]
+        _scan_text = " ".join(filter(None, [
+            result.raw_description or "",
+            " ".join(result.observations),
+            " ".join(result.clarification_questions),
+        ])).lower()
+        _multi_hits = sum(1 for p in _MULTI_CAR_PHRASES if p in _scan_text)
+        if _multi_hits >= 1 and result.vehicle_count <= 1:
+            logger.info(f"image_agent: text heuristic found {_multi_hits} multi-car phrase(s), upgrading vehicle_count to 2")
+            result = result.model_copy(update={"vehicle_count": 2, "needs_clarification": True})
 
         clarification_questions = list(result.clarification_questions)
 
