@@ -115,24 +115,24 @@ async def run_image_agent(state: CarAssistantState) -> ImageAgentOutput:
         try:
             count_msg = await llm.ainvoke([
                 SystemMessage(
-                    "You are a vehicle counter. Count only LARGE prominent cars in the "
-                    "foreground — cars that are close to the camera and clearly the main "
-                    "subjects. Ignore small or distant background cars.\n"
-                    "EXAMPLES:\n"
-                    "- One car fills most of the frame → reply: 1\n"
-                    "- Two cars side by side both large and close → reply: 2\n"
-                    "- One main car + tiny distant cars → reply: 1\n"
-                    "Reply with ONLY a single digit: 0, 1, 2, or 3. No other text."
+                    "You are examining an automotive photograph.\n"
+                    "Task: determine if there are 2 or more LARGE cars in the foreground.\n"
+                    "Only count cars that are BIG and CLOSE to the camera — the main subjects.\n"
+                    "Ignore small, blurry, or distant background cars.\n"
+                    "Reply with EXACTLY one word: YES (2 or more foreground cars) or NO (only 1 or 0)."
                 ),
                 HumanMessage(content=[
-                    {"type": "text", "text": "How many prominent foreground cars are in this image? Reply with one digit only."},
+                    {"type": "text", "text": "Are there 2 or more prominent foreground cars? Reply YES or NO."},
                     img_block,
                 ]),
             ])
-            count_raw = str(count_msg.content).strip()
-            # extract first digit found
-            digits = [c for c in count_raw if c.isdigit()]
-            pre_count = int(digits[0]) if digits else 0
+            count_raw = str(count_msg.content).strip().upper()
+            # Binary: YES → 2, anything else → try to extract digit, default 1
+            if "YES" in count_raw:
+                pre_count = 2
+            else:
+                digits = [c for c in count_raw if c.isdigit()]
+                pre_count = int(digits[0]) if digits else 1
             logger.info(f"image_agent pre-count: raw={count_raw!r} → {pre_count}")
         except Exception as exc:
             logger.warning(f"image_agent pre-count failed: {exc}")
