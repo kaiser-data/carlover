@@ -1269,21 +1269,37 @@ function _urgencyChip(text) {
 }
 
 function _renderDiagnosisSections(text) {
-  const sentences = text.replace(/\n{2,}/g, '\n').split(/(?<=[.!?])\s+/).filter(s => s.trim());
+  // Strip markdown bold/italic and numbered list markers before parsing
+  const clean = text
+    .replace(/\*\*(.*?)\*\*/g, '$1')   // **bold** → plain
+    .replace(/\*(.*?)\*/g, '$1')        // *italic* → plain
+    .replace(/^\s*\d+\.\s+/gm, '')     // "1. foo" → "foo" at line start
+    .replace(/\n{2,}/g, ' ')
+    .trim();
+
+  // Split on sentence boundaries (capital letter start only, avoids "1." fragments)
+  const sentences = clean
+    .split(/(?<=[.!?])\s+(?=[A-Z\u00C0-\u024F])/)
+    .map(s => s.trim())
+    .filter(s => s.length > 15);
+
   if (sentences.length < 2) {
-    return `<div class="diag-section problem"><div class="diag-label">Diagnosis</div><div class="diag-text">${text}</div></div>`;
+    return `<div class="diag-section problem"><div class="diag-label">Diagnosis</div><div class="diag-text">${clean}</div></div>`;
   }
+
   const problem = sentences[0];
   let causeIdx = sentences.findIndex((s, i) => i > 0 && /because|caused|likely|probably|ursache|wegen|durch/i.test(s));
   if (causeIdx < 0) causeIdx = Math.min(1, sentences.length - 1);
-  let actionIdx = sentences.findIndex((s, i) => i > 0 && /recommend|check|replace|visit|bring|should|must|call|inspect|empfehlen|prüfen|wechseln|werkstatt/i.test(s));
-  if (actionIdx < 0) actionIdx = Math.min(2, sentences.length - 1);
+  let actionIdx = sentences.findIndex((s, i) => i > 0 && i !== causeIdx && /recommend|check|replace|visit|bring|should|must|call|inspect|empfehlen|prüfen|wechseln|werkstatt/i.test(s));
+  if (actionIdx < 0) actionIdx = Math.min(causeIdx + 1, sentences.length - 1);
+
   const causeSentence = sentences[causeIdx] || '';
   const actionSentence = sentences[actionIdx] || '';
   const rest = sentences.filter((_, i) => i !== 0 && i !== causeIdx && i !== actionIdx);
+
   let html = `<div class="diag-section problem"><div class="diag-label">Problem</div><div class="diag-text">${problem}</div></div>`;
-  if (causeSentence) html += `<div class="diag-section cause"><div class="diag-label">Likely Cause</div><div class="diag-text">${causeSentence}</div></div>`;
-  if (actionSentence) html += `<div class="diag-section action"><div class="diag-label">Recommended Action</div><div class="diag-text">${actionSentence}</div></div>`;
+  if (causeSentence && causeIdx !== 0) html += `<div class="diag-section cause"><div class="diag-label">Likely Cause</div><div class="diag-text">${causeSentence}</div></div>`;
+  if (actionSentence && actionIdx !== 0 && actionIdx !== causeIdx) html += `<div class="diag-section action"><div class="diag-label">Recommended Action</div><div class="diag-text">${actionSentence}</div></div>`;
   if (rest.length) html += `<div style="font-size:13px;line-height:1.7;color:var(--muted);margin-top:6px;">${rest.join(' ')}</div>`;
   html += _urgencyChip(text);
   return html;
