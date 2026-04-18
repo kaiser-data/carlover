@@ -69,7 +69,7 @@ def deploy(env: dict[str, str]) -> None:
                 "FEATHERLESS_BASE_URL": env.get("FEATHERLESS_BASE_URL", "https://api.featherless.ai/v1"),
                 "FEATHERLESS_MODEL_ORCHESTRATOR": env.get("FEATHERLESS_MODEL_ORCHESTRATOR", "Qwen/Qwen2.5-14B-Instruct"),
                 "FEATHERLESS_MODEL_REASONING": env.get("FEATHERLESS_MODEL_REASONING", "Qwen/Qwen2.5-72B-Instruct"),
-                "FEATHERLESS_MODEL_VISION": env.get("FEATHERLESS_MODEL_VISION", "Qwen/Qwen3-VL-30B-A3B-Instruct"),
+                "FEATHERLESS_MODEL_VISION": env.get("FEATHERLESS_MODEL_VISION", "Qwen/Qwen3-VL-235B-A22B-Thinking"),
                 "FEATHERLESS_MODEL_RESPONSE": env.get("FEATHERLESS_MODEL_RESPONSE", "Qwen/Qwen2.5-72B-Instruct"),
                 "SUPABASE_URL": env.get("SUPABASE_URL", ""),
                 "SUPABASE_KEY": env.get("SUPABASE_KEY", ""),

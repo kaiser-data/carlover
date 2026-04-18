@@ -138,7 +138,10 @@ async def run_image_agent(state: CarAssistantState) -> ImageAgentOutput:
             logger.warning(f"image_agent pre-count failed: {exc}")
 
         # ── Phase 2: full structured analysis, with count injected as hard context ──
-        structured = llm.with_structured_output(ImageAnalysisResult, method="json_mode")
+        # Disable thinking tokens for JSON mode — prevents <think>...</think> blocks
+        # from breaking the JSON parser. The 235B model is still far stronger than 3B.
+        llm_no_think = llm.bind(extra_body={"enable_thinking": False})
+        structured = llm_no_think.with_structured_output(ImageAnalysisResult, method="json_mode")
 
         count_hint = (
             f"IMPORTANT: I can already confirm there are {pre_count} prominent foreground "
