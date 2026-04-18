@@ -253,6 +253,104 @@
   .rc-icon { font-size: 16px; }
   .rc-body { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
 
+  /* ── Vehicle Report Header ── */
+  .vehicle-report {
+    display: flex; gap: 20px; align-items: flex-start;
+  }
+  .vehicle-report-img {
+    width: 200px; height: 130px; object-fit: cover;
+    border-radius: 10px; border: 1px solid var(--border);
+    flex-shrink: 0; background: var(--surface2);
+  }
+  .vehicle-report-img-placeholder {
+    width: 200px; height: 130px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--surface2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px; flex-shrink: 0;
+  }
+  .vehicle-report-info { flex: 1; min-width: 0; }
+  .vehicle-report-make { font-size: 13px; font-weight: 600; color: var(--muted); letter-spacing: .5px; text-transform: uppercase; }
+  .vehicle-report-model { font-size: 26px; font-weight: 900; letter-spacing: -0.5px; line-height: 1.1; margin: 2px 0 8px; }
+  .vehicle-report-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .vtag {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 5px; padding: 3px 9px;
+    font-size: 11px; font-weight: 600; color: var(--muted);
+  }
+  .vehicle-report-links { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+  .report-link {
+    font-size: 12px; color: var(--accent2); text-decoration: none;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .report-link:hover { color: white; }
+  @media (max-width: 600px) {
+    .vehicle-report { flex-direction: column; }
+    .vehicle-report-img, .vehicle-report-img-placeholder { width: 100%; height: 160px; }
+  }
+
+  /* ── Reliability gauge ── */
+  .gauge-row {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    justify-content: center; margin-bottom: 8px;
+  }
+  .gauge-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px; text-align: center;
+    min-width: 100px; flex: 1;
+  }
+  .gauge-year { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+  .gauge-svg { display: block; margin: 0 auto 4px; }
+  .gauge-val { font-size: 18px; font-weight: 900; }
+  .gauge-unit { font-size: 10px; color: var(--muted); }
+  .gauge-rating { font-size: 11px; font-weight: 700; margin-top: 4px; }
+
+  /* ── Diagnosis sections ── */
+  .diag-section { padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; }
+  .diag-section:last-child { margin-bottom: 0; }
+  .diag-section.problem { background: rgba(99,102,241,.07); border: 1px solid rgba(99,102,241,.2); }
+  .diag-section.cause   { background: var(--surface2); border: 1px solid var(--border); }
+  .diag-section.action  { background: rgba(34,197,94,.07); border: 1px solid rgba(34,197,94,.2); }
+  .diag-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin-bottom: 5px; }
+  .diag-text { font-size: 13px; line-height: 1.6; }
+  .urgency-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 700; margin-top: 10px;
+  }
+  .urgency-chip.now    { background: rgba(239,68,68,.15); color: var(--red); border: 1px solid rgba(239,68,68,.3); }
+  .urgency-chip.soon   { background: rgba(245,158,11,.15); color: var(--amber); border: 1px solid rgba(245,158,11,.3); }
+  .urgency-chip.routine { background: rgba(34,197,94,.1); color: var(--green); border: 1px solid rgba(34,197,94,.25); }
+
+  /* ── Slide-in animation ── */
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .result-card { animation: slideUp .35s ease both; }
+  .result-grid > *:nth-child(1) { animation-delay: .05s; }
+  .result-grid > *:nth-child(2) { animation-delay: .12s; }
+  .result-grid > *:nth-child(3) { animation-delay: .20s; }
+  .result-grid > *:nth-child(4) { animation-delay: .28s; }
+
+  /* ── Export button ── */
+  .export-btn {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--muted); border-radius: 8px; padding: 8px 16px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    font-family: inherit; transition: border-color .15s, color .15s;
+  }
+  .export-btn:hover { border-color: var(--accent); color: var(--text); }
+
+  /* ── Print styles ── */
+  @media print {
+    header, .api-bar, .hero, .tools-grid, .suggestions-box { display: none !important; }
+    body { background: white; color: #111; }
+    .result-card { border: 1px solid #ddd; page-break-inside: avoid; animation: none; }
+    .rc-header { color: #555; border-color: #ddd; }
+    :root { --bg: white; --surface: white; --surface2: #f8f8f8; --border: #e0e0e0; --text: #111; --muted: #666; }
+  }
+
   .vehicle-detected {
     display: flex; align-items: center; gap: 12px;
     padding: 12px 16px;
@@ -558,6 +656,11 @@
 
   <!-- ── RESULTS ── -->
   <div class="results" id="results">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 2px;margin-bottom:4px;">
+      <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Analysis Report</div>
+      <button class="export-btn" onclick="window.print()">🖨 Download Report</button>
+    </div>
 
     <div class="result-grid">
 
@@ -963,6 +1066,22 @@ function applyRotation(deg) {
   if (img) img.style.transform = `rotate(${deg}deg)`;
 }
 
+// ── Arc gauge SVG ──
+function _buildGauge(rate, maxRate) {
+  const cx = 60, cy = 54, r = 42;
+  const frac = Math.min(Math.max(rate / maxRate, 0), 1);
+  const phi = frac * Math.PI;
+  const nx = (cx + r * Math.cos(phi)).toFixed(1);
+  const ny = (cy - r * Math.sin(phi)).toFixed(1);
+  const color = rate < 2 ? '#22c55e' : rate < 5 ? '#f59e0b' : '#ef4444';
+  return `<svg viewBox="0 0 120 68" width="90" height="52" class="gauge-svg">
+    <path d="M ${cx-r} ${cy} A ${r} ${r} 0 0 1 ${cx+r} ${cy}" fill="none" stroke="#1e2440" stroke-width="8" stroke-linecap="butt"/>
+    <line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="${color}" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="4.5" fill="${color}"/>
+    <circle cx="${cx}" cy="${cy}" r="2" fill="#0a0c14"/>
+  </svg>`;
+}
+
 // ── Render: Vehicle identified ──
 function renderVehicleResult(adac, img) {
   const card = document.getElementById('rc-vehicle');
@@ -970,15 +1089,47 @@ function renderVehicleResult(adac, img) {
   if (!img.detected_make) { card.style.display = 'none'; return; }
 
   const info = adac?.vehicle_info;
-  let html = `<div class="vehicle-detected">`;
-  if (info?.image_url) html += `<img class="vehicle-img" src="${info.image_url}" alt="${img.detected_make} ${img.detected_model}" onerror="this.style.display='none'" />`;
-  html += `<div>
-    <div class="vehicle-name">${img.detected_make} ${img.detected_model}</div>
-    <div class="vehicle-sub">${info ? (info.year_from || '') + (info.year_to ? '–' + info.year_to : '') + (info.engine_types?.length ? ' · ' + info.engine_types.slice(0,3).join(', ') : '') : 'Identified from photo'}</div>
-  </div></div>`;
+  const makeStr = img.detected_make || '';
+  const modelStr = img.detected_model || '';
+  const yearRange = info
+    ? (info.year_from || '') + (info.year_to && info.year_to !== info.year_from ? '–' + info.year_to : '')
+    : '';
+  const engines = info?.engine_types?.slice(0, 3) || [];
+
+  const latestYear = info?.reliability_by_year?.[info.reliability_by_year.length - 1];
+  const rateColor = latestYear
+    ? (latestYear.breakdown_rate_per_1000 < 2 ? 'green' : latestYear.breakdown_rate_per_1000 < 5 ? 'amber' : 'red')
+    : null;
+  const ratingWord = latestYear?.rating || (latestYear
+    ? (latestYear.breakdown_rate_per_1000 < 2 ? 'Sehr Gut' : latestYear.breakdown_rate_per_1000 < 4 ? 'Gut' : 'Durchschnittlich')
+    : null);
+
+  let html = `<div class="vehicle-report">`;
+  if (info?.image_url) {
+    html += `<img class="vehicle-report-img" src="${info.image_url}" alt="${makeStr} ${modelStr}" onerror="this.outerHTML='<div class=\\'vehicle-report-img-placeholder\\'>🚗</div>'"/>`;
+  } else {
+    html += `<div class="vehicle-report-img-placeholder">🚗</div>`;
+  }
+  html += `<div class="vehicle-report-info">
+    <div class="vehicle-report-make">${makeStr}</div>
+    <div class="vehicle-report-model">${modelStr}</div>`;
+  if (yearRange || engines.length) {
+    html += `<div class="vehicle-report-tags">`;
+    if (yearRange) html += `<span class="vtag">📅 ${yearRange}</span>`;
+    engines.forEach(e => html += `<span class="vtag">⚙️ ${e}</span>`);
+    html += `</div>`;
+  }
+  if (rateColor && ratingWord) {
+    html += `<div style="margin-bottom:8px;"><span class="badge ${rateColor}">★ ADAC Reliability: ${ratingWord}</span></div>`;
+  }
+  html += `<div class="vehicle-report-links">`;
+  if (info?.adac_page_url) {
+    html += `<a class="report-link" href="${info.adac_page_url}" target="_blank">📊 View full ADAC report →</a>`;
+  }
+  html += `</div></div></div>`;
 
   if (adac?.corrections?.length) {
-    html += `<div style="font-size:11px;color:var(--muted);margin-top:4px;">🔧 Normalized: ${adac.corrections.join(' · ')}</div>`;
+    html += `<div style="font-size:11px;color:var(--muted);margin-top:8px;">🔧 Normalized: ${adac.corrections.join(' · ')}</div>`;
   }
 
   body.innerHTML = html;
@@ -994,34 +1145,53 @@ function renderAdacResult(d) {
   const info = d.vehicle_info;
   let html = '';
 
-  // Known issues
   if (info.known_issues_summary) {
     html += `<div class="section-label">Known Issues</div>`;
-    html += `<div style="font-size:13px;line-height:1.6;color:var(--text);">${info.known_issues_summary}</div>`;
+    html += `<div style="font-size:13px;line-height:1.6;color:var(--text);margin-bottom:12px;">${info.known_issues_summary}</div>`;
   }
 
-  // Reliability by year
   if (info.reliability_by_year?.length) {
-    html += `<div class="section-label" style="margin-top:12px;">Breakdown Rate (per 1,000 vehicles)</div>`;
-    const maxVal = Math.max(...info.reliability_by_year.map(y => y.breakdown_rate_per_1000 || 0), 1);
-    info.reliability_by_year.forEach(y => {
+    const allRates = info.reliability_by_year.map(y => y.breakdown_rate_per_1000 || 0);
+    const maxRate = Math.max(...allRates, 10);
+    const gaugeYears = info.reliability_by_year.slice(-4);
+
+    html += `<div class="section-label" style="margin-top:4px;">Breakdown Rate (per 1,000 vehicles)</div>`;
+    html += `<div class="gauge-row">`;
+    gaugeYears.forEach(y => {
       const rate = y.breakdown_rate_per_1000 || 0;
-      const pct = Math.round((rate / maxVal) * 100);
-      const color = rate < 2 ? '#22c55e' : rate < 4 ? '#f59e0b' : '#ef4444';
-      const label = y.rating || '';
-      html += `<div class="reliability-year">
-        <span class="ry-year">${y.year}</span>
-        <div class="ry-bar-wrap"><div class="ry-bar" style="width:${pct}%;background:${color}"></div></div>
-        <span class="ry-val">${rate.toFixed(1)}</span>
-        <span class="ry-rating" style="color:${color}">${label}</span>
+      const color = rate < 2 ? '#22c55e' : rate < 5 ? '#f59e0b' : '#ef4444';
+      const word = y.rating || (rate < 2 ? 'Sehr Gut' : rate < 4 ? 'Gut' : rate < 6 ? 'Mittel' : 'Schlecht');
+      html += `<div class="gauge-card">
+        <div class="gauge-year">${y.year}</div>
+        ${_buildGauge(rate, maxRate)}
+        <div class="gauge-val" style="color:${color}">${rate.toFixed(1)}</div>
+        <div class="gauge-unit">per 1,000</div>
+        <div class="gauge-rating" style="color:${color}">${word}</div>
       </div>`;
     });
+    html += `</div>`;
+
+    if (info.reliability_by_year.length > 4) {
+      const maxV = Math.max(...allRates, 1);
+      html += `<details style="margin-top:4px;"><summary>Full history (${info.reliability_by_year.length} years)</summary><div style="margin-top:8px;">`;
+      info.reliability_by_year.forEach(y => {
+        const rate = y.breakdown_rate_per_1000 || 0;
+        const pct = Math.round((rate / maxV) * 100);
+        const color = rate < 2 ? '#22c55e' : rate < 4 ? '#f59e0b' : '#ef4444';
+        html += `<div class="reliability-year">
+          <span class="ry-year">${y.year}</span>
+          <div class="ry-bar-wrap"><div class="ry-bar" style="width:${pct}%;background:${color}"></div></div>
+          <span class="ry-val">${rate.toFixed(1)}</span>
+          <span class="ry-rating" style="color:${color}">${y.rating||''}</span>
+        </div>`;
+      });
+      html += `</div></details>`;
+    }
   }
 
-  // Issue patterns
   if (d.issue_patterns?.length) {
     html += `<div class="section-label" style="margin-top:12px;">Known Issue Patterns</div>`;
-    d.issue_patterns.slice(0,4).forEach(p => {
+    d.issue_patterns.slice(0, 4).forEach(p => {
       html += `<div class="issue-item">
         <div class="issue-system">${p.system || p.component || ''}</div>
         <div>${p.description || p.title || ''}</div>
@@ -1089,33 +1259,54 @@ function clickSuggestion(text) {
 }
 
 // ── Render: Answer ──
+function _urgencyChip(text) {
+  const lower = text.toLowerCase();
+  if (/sofort|immediately|urgent|dringend|not drive|umgehend/.test(lower))
+    return `<span class="urgency-chip now">🔴 Act now</span>`;
+  if (/bald|soon|within|kurzfristig|next service|workshop/.test(lower))
+    return `<span class="urgency-chip soon">🟡 Soon</span>`;
+  return `<span class="urgency-chip routine">🟢 Routine</span>`;
+}
+
+function _renderDiagnosisSections(text) {
+  const sentences = text.replace(/\n{2,}/g, '\n').split(/(?<=[.!?])\s+/).filter(s => s.trim());
+  if (sentences.length < 2) {
+    return `<div class="diag-section problem"><div class="diag-label">Diagnosis</div><div class="diag-text">${text}</div></div>`;
+  }
+  const problem = sentences[0];
+  let causeIdx = sentences.findIndex((s, i) => i > 0 && /because|caused|likely|probably|ursache|wegen|durch/i.test(s));
+  if (causeIdx < 0) causeIdx = Math.min(1, sentences.length - 1);
+  let actionIdx = sentences.findIndex((s, i) => i > 0 && /recommend|check|replace|visit|bring|should|must|call|inspect|empfehlen|prüfen|wechseln|werkstatt/i.test(s));
+  if (actionIdx < 0) actionIdx = Math.min(2, sentences.length - 1);
+  const causeSentence = sentences[causeIdx] || '';
+  const actionSentence = sentences[actionIdx] || '';
+  const rest = sentences.filter((_, i) => i !== 0 && i !== causeIdx && i !== actionIdx);
+  let html = `<div class="diag-section problem"><div class="diag-label">Problem</div><div class="diag-text">${problem}</div></div>`;
+  if (causeSentence) html += `<div class="diag-section cause"><div class="diag-label">Likely Cause</div><div class="diag-text">${causeSentence}</div></div>`;
+  if (actionSentence) html += `<div class="diag-section action"><div class="diag-label">Recommended Action</div><div class="diag-text">${actionSentence}</div></div>`;
+  if (rest.length) html += `<div style="font-size:13px;line-height:1.7;color:var(--muted);margin-top:6px;">${rest.join(' ')}</div>`;
+  html += _urgencyChip(text);
+  return html;
+}
+
 function renderAnswerResult(d) {
   const card = document.getElementById('rc-answer');
   const body = document.getElementById('rc-answer-body');
 
-  let html = '';
   const answer = d.answer || d.final_answer || d.message || '';
-  if (answer) {
-    html += `<div style="font-size:14px;line-height:1.7;white-space:pre-wrap;">${answer}</div>`;
-  }
+  let html = answer ? _renderDiagnosisSections(answer) : '';
 
-  // Confidence + agents
-  if (d.confidence !== undefined || d.used_agents?.length) {
-    html += `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">`;
+  if (d.confidence !== undefined || d.used_agents?.length || d.elapsed_ms) {
+    html += `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;">`;
     if (d.confidence !== undefined) {
       const cClass = d.confidence >= .7 ? 'green' : d.confidence >= .4 ? 'amber' : 'red';
       html += `<span class="badge ${cClass}">confidence ${(d.confidence*100).toFixed(0)}%</span>`;
     }
-    if (d.used_agents?.length) {
-      d.used_agents.forEach(a => html += `<span class="badge indigo">⚡ ${a}</span>`);
-    }
-    if (d.elapsed_ms) {
-      html += `<span class="badge">${d.elapsed_ms.toFixed(0)} ms</span>`;
-    }
+    if (d.used_agents?.length) d.used_agents.forEach(a => html += `<span class="badge indigo">⚡ ${a}</span>`);
+    if (d.elapsed_ms) html += `<span class="badge">${d.elapsed_ms.toFixed(0)} ms</span>`;
     html += `</div>`;
   }
 
-  // Sources
   if (d.sources?.length) {
     html += `<hr class="section-divider" />`;
     html += `<div style="display:flex;flex-wrap:wrap;gap:6px;">`;

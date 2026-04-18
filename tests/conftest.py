@@ -88,6 +88,10 @@ class MockStructuredLLM:
 
 
 class MockChatModel:
+    async def ainvoke(self, messages, **kwargs):
+        # Used by the plain-text vehicle count pre-check
+        return MagicMock(content="1")
+
     def with_structured_output(self, schema, **kwargs):
         return MockStructuredLLM(schema)
 

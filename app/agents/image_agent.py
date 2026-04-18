@@ -107,17 +107,49 @@ async def run_image_agent(state: CarAssistantState) -> ImageAgentOutput:
 
     try:
         llm = get_model("vision")
+        img_block = _build_image_content(image_url)
+
+        # ── Phase 1: plain-text vehicle count (bypasses JSON-mode blindness) ──
+        count_raw: str = ""
+        pre_count = 0
+        try:
+            count_msg = await llm.ainvoke([
+                SystemMessage(
+                    "You are a vehicle counter. Look at the image and count only the "
+                    "PROMINENT cars clearly visible in the foreground — ignore distant "
+                    "background traffic. Reply with EXACTLY one integer and nothing else."
+                ),
+                HumanMessage(content=[
+                    {"type": "text", "text": "How many prominent foreground cars?"},
+                    img_block,
+                ]),
+            ])
+            count_raw = str(count_msg.content).strip()
+            # extract first digit found
+            digits = [c for c in count_raw if c.isdigit()]
+            pre_count = int(digits[0]) if digits else 0
+            logger.info(f"image_agent pre-count: raw={count_raw!r} → {pre_count}")
+        except Exception as exc:
+            logger.warning(f"image_agent pre-count failed: {exc}")
+
+        # ── Phase 2: full structured analysis, with count injected as hard context ──
         structured = llm.with_structured_output(ImageAnalysisResult, method="json_mode")
+
+        count_hint = (
+            f"IMPORTANT: I can already confirm there are {pre_count} prominent foreground "
+            f"vehicle(s) in this image. Set vehicle_count={pre_count} in your JSON output. "
+            + ("Ask the user which one they mean. " if pre_count > 1 else "")
+        ) if pre_count > 0 else ""
 
         content = [
             {
                 "type": "text",
-                "text": (
-                    "Count the prominent foreground vehicles first (ignore distant background cars), "
-                    "then analyze. If two or more main cars are visible, set vehicle_count and ask which one."
+                "text": count_hint + (
+                    "Analyze this image. Ignore distant background cars — focus only on "
+                    "prominent foreground vehicles."
                 ),
             },
-            _build_image_content(image_url),
+            img_block,
         ]
 
         result: ImageAnalysisResult = await structured.ainvoke([
@@ -125,27 +157,10 @@ async def run_image_agent(state: CarAssistantState) -> ImageAgentOutput:
             HumanMessage(content=content),
         ])
 
-        # Post-processing: detect if model underreported vehicle_count
-        # Check raw_description + observations for multi-vehicle language
-        _multi_signals = [
-            "two cars", "two vehicles", "both cars", "both vehicles",
-            "left car", "right car", "left vehicle", "right vehicle",
-            "another car", "second car", "second vehicle",
-            "on the left", "on the right",
-            "blue car", "white car", "red car",  # multiple color refs = likely multiple cars
-        ]
-        _combined_text = " ".join(
-            [result.raw_description or ""] + list(result.observations) + list(result.clarification_questions)
-        ).lower()
-        _signal_hits = sum(1 for s in _multi_signals if s in _combined_text)
-        # Also check: multiple distinct color+car patterns suggest 2 vehicles
-        _color_car_hits = sum(
-            1 for phrase in ["blue", "white", "red", "silver", "black", "green", "yellow"]
-            if phrase in _combined_text
-        )
-        if result.vehicle_count <= 1 and (_signal_hits >= 2 or _color_car_hits >= 2):
-            logger.info(f"image_agent: bumping vehicle_count 1→2 (signals={_signal_hits}, colors={_color_car_hits})")
-            result = result.model_copy(update={"vehicle_count": 2, "needs_clarification": True})
+        # ── Post-processing: enforce pre-count if model ignored it ──
+        if pre_count > 1 and result.vehicle_count <= 1:
+            logger.info(f"image_agent: enforcing pre_count {pre_count} (model returned {result.vehicle_count})")
+            result = result.model_copy(update={"vehicle_count": pre_count, "needs_clarification": True})
 
         clarification_questions = list(result.clarification_questions)
 
