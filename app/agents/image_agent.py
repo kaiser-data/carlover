@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import base64
 from typing import Optional
 
@@ -82,6 +83,31 @@ class ImageAnalysisResult(BaseModel):
     image_rotation_deg: int = 0
 
 
+async def _invoke_with_429_retry(structured, messages, max_attempts: int = 5):
+    """Retry structured.ainvoke with exponential backoff on 429/503 transient errors."""
+    delay = 3.0
+    last_exc: Optional[Exception] = None
+    for attempt in range(1, max_attempts + 1):
+        try:
+            return await structured.ainvoke(messages)
+        except Exception as exc:
+            msg = str(exc)
+            transient = (
+                "429" in msg
+                or "503" in msg
+                or "concurrency_limit_exceeded" in msg
+                or "Concurrency limit" in msg
+                or "temporarily unavailable" in msg
+            )
+            last_exc = exc
+            if not transient or attempt == max_attempts:
+                raise
+            logger.warning(f"image_agent transient error on attempt {attempt}; retrying in {delay:.1f}s: {msg[:120]}")
+            await asyncio.sleep(delay)
+            delay *= 2
+    raise last_exc  # pragma: no cover
+
+
 def _build_image_content(image_url: str) -> dict:
     """Return the appropriate LangChain image content block."""
     if image_url.startswith("data:"):
@@ -109,73 +135,30 @@ async def run_image_agent(state: CarAssistantState) -> ImageAgentOutput:
         llm = get_model("vision")
         img_block = _build_image_content(image_url)
 
-        # ── Phase 1: plain-text vehicle count (bypasses JSON-mode blindness) ──
-        count_raw: str = ""
-        pre_count = 0
-        try:
-            count_msg = await llm.ainvoke([
-                SystemMessage(
-                    "Look at this image very carefully. Count EVERY large car visible.\n"
-                    "A car on the LEFT side of the image counts as 1.\n"
-                    "A car on the RIGHT side of the image counts as 1.\n"
-                    "If there is a car on the LEFT and a different car on the RIGHT, that is 2 cars total.\n"
-                    "Ignore tiny background cars. Only count LARGE, CLOSE, PROMINENT cars.\n"
-                    "Reply with ONLY a single digit: 0, 1, or 2."
-                ),
-                HumanMessage(content=[
-                    {"type": "text", "text": "Count the large prominent cars: look at the LEFT side, then look at the RIGHT side. Reply with one digit only."},
-                    img_block,
-                ]),
-            ])
-            count_raw = str(count_msg.content).strip()
-            digits = [c for c in count_raw if c.isdigit()]
-            pre_count = int(digits[0]) if digits else 1
-            # Also treat any response containing "two" or "2" as multi-car
-            if not digits and any(w in count_raw.lower() for w in ["two", "both", "multiple", "yes"]):
-                pre_count = 2
-            logger.info(f"image_agent pre-count: raw={count_raw!r} → {pre_count}")
-        except Exception as exc:
-            logger.warning(f"image_agent pre-count failed: {exc}")
-
-        # ── Phase 2: full structured analysis, with count injected as hard context ──
-        # Disable thinking tokens for JSON mode — prevents <think>...</think> blocks
-        # from breaking the JSON parser. The 235B model is still far stronger than 3B.
         llm_no_think = llm.bind(extra_body={"enable_thinking": False})
         structured = llm_no_think.with_structured_output(ImageAnalysisResult, method="json_mode")
-
-        count_hint = (
-            f"IMPORTANT: I can already confirm there are {pre_count} prominent foreground "
-            f"vehicle(s) in this image. Set vehicle_count={pre_count} in your JSON output. "
-            + ("Ask the user which one they mean. " if pre_count > 1 else "")
-        ) if pre_count > 0 else ""
 
         content = [
             {
                 "type": "text",
-                "text": count_hint + (
+                "text": (
                     "Analyze this image. Ignore distant background cars — focus only on "
-                    "prominent foreground vehicles."
+                    "prominent foreground vehicles. If there are two or more main cars, "
+                    "set vehicle_count accordingly and ask which one to analyze."
                 ),
             },
             img_block,
         ]
 
-        result: ImageAnalysisResult = await structured.ainvoke([
-            SystemMessage(content=_SYSTEM_PROMPT),
-            HumanMessage(content=content),
-        ])
+        messages = [SystemMessage(content=_SYSTEM_PROMPT), HumanMessage(content=content)]
+        result: ImageAnalysisResult = await _invoke_with_429_retry(structured, messages)
 
-        # ── Post-processing layer 1: enforce pre-count if model ignored it ──
-        if pre_count > 1 and result.vehicle_count <= 1:
-            logger.info(f"image_agent: enforcing pre_count {pre_count} (model returned {result.vehicle_count})")
-            result = result.model_copy(update={"vehicle_count": pre_count, "needs_clarification": True})
-
-        # ── Post-processing layer 2: bounding-box count override ──
+        # ── Post-processing layer 1: bounding-box count override ──
         if len(result.vehicle_boxes) >= 2 and result.vehicle_count <= 1:
             logger.info(f"image_agent: bounding-box count {len(result.vehicle_boxes)} overrides vehicle_count={result.vehicle_count}")
             result = result.model_copy(update={"vehicle_count": len(result.vehicle_boxes), "needs_clarification": True})
 
-        # ── Post-processing layer 3: text heuristic scan ──
+        # ── Post-processing layer 2: text heuristic scan ──
         # Catches models that describe multiple cars in observations but don't set vehicle_count
         _MULTI_CAR_PHRASES = [
             "two cars", "two vehicles", "both cars", "both vehicles",

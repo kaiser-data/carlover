@@ -52,6 +52,7 @@ async def test_single_car_identified(mock_llm, monkeypatch):
     mock_structured = MagicMock()
     mock_structured.ainvoke = AsyncMock(return_value=structured_result)
     mock_llm_instance.with_structured_output = MagicMock(return_value=mock_structured)
+    mock_llm_instance.bind = MagicMock(return_value=mock_llm_instance)
 
     with patch("app.agents.image_agent.get_model", return_value=mock_llm_instance):
         result = await run_image_agent({"image_url": "https://example.com/golf.jpg"})
@@ -86,6 +87,7 @@ async def test_two_foreground_cars_triggers_clarification(mock_llm, monkeypatch)
     mock_structured = MagicMock()
     mock_structured.ainvoke = AsyncMock(return_value=structured_result)
     mock_llm_instance.with_structured_output = MagicMock(return_value=mock_structured)
+    mock_llm_instance.bind = MagicMock(return_value=mock_llm_instance)
 
     with patch("app.agents.image_agent.get_model", return_value=mock_llm_instance):
         result = await run_image_agent({"image_url": "https://example.com/two_cars.jpg"})
@@ -117,6 +119,7 @@ async def test_pre_count_overrides_structured_vehicle_count(mock_llm, monkeypatc
     mock_structured = MagicMock()
     mock_structured.ainvoke = AsyncMock(return_value=structured_result)
     mock_llm_instance.with_structured_output = MagicMock(return_value=mock_structured)
+    mock_llm_instance.bind = MagicMock(return_value=mock_llm_instance)
 
     with patch("app.agents.image_agent.get_model", return_value=mock_llm_instance):
         result = await run_image_agent({"image_url": "https://example.com/two_cars.jpg"})
@@ -144,6 +147,7 @@ async def test_warning_lights_detected(mock_llm, monkeypatch):
     mock_structured = MagicMock()
     mock_structured.ainvoke = AsyncMock(return_value=structured_result)
     mock_llm_instance.with_structured_output = MagicMock(return_value=mock_structured)
+    mock_llm_instance.bind = MagicMock(return_value=mock_llm_instance)
 
     with patch("app.agents.image_agent.get_model", return_value=mock_llm_instance):
         result = await run_image_agent({"image_url": "https://example.com/dashboard.jpg"})
@@ -170,6 +174,7 @@ async def test_rotated_image_detected(mock_llm, monkeypatch):
     mock_structured = MagicMock()
     mock_structured.ainvoke = AsyncMock(return_value=structured_result)
     mock_llm_instance.with_structured_output = MagicMock(return_value=mock_structured)
+    mock_llm_instance.bind = MagicMock(return_value=mock_llm_instance)
 
     with patch("app.agents.image_agent.get_model", return_value=mock_llm_instance):
         result = await run_image_agent({"image_url": "https://example.com/rotated.jpg"})
@@ -195,6 +200,7 @@ async def test_no_vehicle_triggers_clarification(mock_llm, monkeypatch):
     mock_structured = MagicMock()
     mock_structured.ainvoke = AsyncMock(return_value=structured_result)
     mock_llm_instance.with_structured_output = MagicMock(return_value=mock_structured)
+    mock_llm_instance.bind = MagicMock(return_value=mock_llm_instance)
 
     with patch("app.agents.image_agent.get_model", return_value=mock_llm_instance):
         result = await run_image_agent({"image_url": "https://example.com/landscape.jpg"})
