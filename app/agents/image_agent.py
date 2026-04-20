@@ -6,7 +6,7 @@ from typing import Optional
 
 from langchain_core.messages import HumanMessage, SystemMessage
 from loguru import logger
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from app.graph.state import CarAssistantState
 from app.providers.llm.model_router import get_model
@@ -81,6 +81,51 @@ class ImageAnalysisResult(BaseModel):
     detected_model: Optional[str] = None
     vehicle_boxes: list[_BBox] = Field(default_factory=list)
     image_rotation_deg: int = 0
+
+    @model_validator(mode="before")
+    @classmethod
+    def _coerce_model_shapes(cls, data):
+        # Qwen3-VL frequently returns shapes that don't match our schema verbatim.
+        # Normalize them here so structured parsing succeeds.
+        if not isinstance(data, dict):
+            return data
+
+        # observations: accept [{description: "..."}] or [{"text": "..."}]
+        obs = data.get("observations")
+        if isinstance(obs, list):
+            coerced = []
+            for item in obs:
+                if isinstance(item, str):
+                    coerced.append(item)
+                elif isinstance(item, dict):
+                    val = item.get("description") or item.get("text") or item.get("observation")
+                    if isinstance(val, str):
+                        coerced.append(val)
+            data["observations"] = coerced
+
+        # clarification_question (singular) → clarification_questions (list)
+        if "clarification_question" in data and "clarification_questions" not in data:
+            q = data.pop("clarification_question")
+            if isinstance(q, str) and q.strip():
+                data["clarification_questions"] = [q]
+            elif isinstance(q, list):
+                data["clarification_questions"] = [s for s in q if isinstance(s, str)]
+
+        # warning_lights (model's name) → warning_lights_detected (our name)
+        if "warning_lights" in data and "warning_lights_detected" not in data:
+            wl = data.pop("warning_lights")
+            if isinstance(wl, list):
+                data["warning_lights_detected"] = [s for s in wl if isinstance(s, str)]
+
+        # damage: [...] list form → damage_detected: bool
+        if "damage" in data and "damage_detected" not in data:
+            dmg = data.pop("damage")
+            if isinstance(dmg, list):
+                data["damage_detected"] = len(dmg) > 0
+            elif isinstance(dmg, bool):
+                data["damage_detected"] = dmg
+
+        return data
 
 
 async def _invoke_with_429_retry(structured, messages, max_attempts: int = 5):
