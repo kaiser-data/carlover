@@ -205,8 +205,7 @@ async def run_image_agent(state: CarAssistantState) -> ImageAgentOutput:
         llm = get_model("vision")
         img_block = _build_image_content(image_url)
 
-        llm_no_think = llm.bind(extra_body={"enable_thinking": False})
-        structured = llm_no_think.with_structured_output(ImageAnalysisResult, method="json_mode")
+        structured = llm.with_structured_output(ImageAnalysisResult, method="json_mode")
 
         content = [
             {

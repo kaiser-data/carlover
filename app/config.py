@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     FEATHERLESS_BASE_URL: str = "https://api.featherless.ai/v1"
     FEATHERLESS_MODEL_ORCHESTRATOR: str = "meta-llama/Llama-3.1-8B-Instruct"
     FEATHERLESS_MODEL_REASONING: str = "meta-llama/Llama-3.1-70B-Instruct"
-    FEATHERLESS_MODEL_VISION: str = "Qwen/Qwen3-VL-235B-A22B-Thinking"
+    FEATHERLESS_MODEL_VISION: str = "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
     FEATHERLESS_MODEL_RESPONSE: str = "meta-llama/Llama-3.1-70B-Instruct"
 
     # LLM request settings
