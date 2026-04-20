@@ -153,6 +153,31 @@ async def _invoke_with_429_retry(structured, messages, max_attempts: int = 5):
     raise last_exc  # pragma: no cover
 
 
+def _count_distinct_car_boxes(boxes: list) -> int:
+    """Count whole-car boxes, ignoring sub-car fragments and near-duplicates.
+
+    A valid car box must:
+      - cover ≥ 5% of image area (filters wheels/headlights/mirrors)
+      - have its center ≥ 0.15 normalized units from every other valid box
+        (filters overlapping fragments like body+front-panel)
+    """
+    valid = []
+    for b in boxes:
+        area = max(0.0, (b.x2 - b.x1)) * max(0.0, (b.y2 - b.y1))
+        if area < 0.05:
+            continue
+        cx, cy = (b.x1 + b.x2) / 2, (b.y1 + b.y2) / 2
+        # Skip if too close to an already-accepted box center
+        too_close = any(
+            ((cx - vc[0]) ** 2 + (cy - vc[1]) ** 2) ** 0.5 < 0.15
+            for vc in valid
+        )
+        if too_close:
+            continue
+        valid.append((cx, cy))
+    return len(valid)
+
+
 def _build_image_content(image_url: str) -> dict:
     """Return the appropriate LangChain image content block."""
     if image_url.startswith("data:"):
@@ -199,9 +224,17 @@ async def run_image_agent(state: CarAssistantState) -> ImageAgentOutput:
         result: ImageAnalysisResult = await _invoke_with_429_retry(structured, messages)
 
         # ── Post-processing layer 1: bounding-box count override ──
-        if len(result.vehicle_boxes) >= 2 and result.vehicle_count <= 1:
-            logger.info(f"image_agent: bounding-box count {len(result.vehicle_boxes)} overrides vehicle_count={result.vehicle_count}")
-            result = result.model_copy(update={"vehicle_count": len(result.vehicle_boxes), "needs_clarification": True})
+        # Only counts *distinct* whole-car boxes (large, with centers spaced apart).
+        # Prevents overcounting when the model returns sub-car boxes (wheels, lights,
+        # door, etc.) or overlapping fragments.
+        distinct_boxes = _count_distinct_car_boxes(result.vehicle_boxes)
+        if distinct_boxes >= 2 and result.vehicle_count <= 1:
+            logger.info(f"image_agent: {distinct_boxes} distinct car boxes override vehicle_count={result.vehicle_count}")
+            result = result.model_copy(update={"vehicle_count": distinct_boxes, "needs_clarification": True})
+        elif distinct_boxes == 1 and result.vehicle_count > 1:
+            # Model hallucinated multiple cars but boxes prove it's one
+            logger.info(f"image_agent: only 1 distinct car box — correcting vehicle_count from {result.vehicle_count}")
+            result = result.model_copy(update={"vehicle_count": 1, "needs_clarification": False})
 
         # ── Post-processing layer 2: text heuristic scan ──
         # Catches models that describe multiple cars in observations but don't set vehicle_count
