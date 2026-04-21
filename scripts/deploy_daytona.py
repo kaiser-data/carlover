@@ -65,6 +65,13 @@ def deploy(env: dict[str, str]) -> None:
             auto_stop_interval=0,    # 0 = never auto-stop (persistent service)
             auto_delete_interval=0,  # 0 = never auto-delete
             env_vars={
+                "LLM_PROVIDER": env.get("LLM_PROVIDER", "groq"),
+                "GROQ_API_KEY": env.get("GROQ_API_KEY", ""),
+                "GROQ_BASE_URL": env.get("GROQ_BASE_URL", "https://api.groq.com/openai/v1"),
+                "GROQ_MODEL_ORCHESTRATOR": env.get("GROQ_MODEL_ORCHESTRATOR", "llama-3.1-8b-instant"),
+                "GROQ_MODEL_REASONING": env.get("GROQ_MODEL_REASONING", "llama-3.3-70b-versatile"),
+                "GROQ_MODEL_VISION": env.get("GROQ_MODEL_VISION", "meta-llama/llama-4-scout-17b-16e-instruct"),
+                "GROQ_MODEL_RESPONSE": env.get("GROQ_MODEL_RESPONSE", "llama-3.3-70b-versatile"),
                 "FEATHERLESS_API_KEY": env.get("FEATHERLESS_API_KEY", ""),
                 "FEATHERLESS_BASE_URL": env.get("FEATHERLESS_BASE_URL", "https://api.featherless.ai/v1"),
                 "FEATHERLESS_MODEL_ORCHESTRATOR": env.get("FEATHERLESS_MODEL_ORCHESTRATOR", "Qwen/Qwen2.5-14B-Instruct"),

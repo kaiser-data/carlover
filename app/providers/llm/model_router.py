@@ -11,19 +11,12 @@ TaskType = Literal["orchestrator", "reasoning", "vision", "response"]
 
 
 class ModelRouter:
-    """Maps task types to specific model names from ENV and returns configured models."""
-
-    _task_to_env: dict[TaskType, str] = {
-        "orchestrator": "FEATHERLESS_MODEL_ORCHESTRATOR",
-        "reasoning": "FEATHERLESS_MODEL_REASONING",
-        "vision": "FEATHERLESS_MODEL_VISION",
-        "response": "FEATHERLESS_MODEL_RESPONSE",
-    }
+    """Maps task types to model names based on the active LLM provider."""
 
     def get_model(self, task: TaskType, **kwargs) -> ChatOpenAI:
         """Return a chat model configured for the given task type."""
         settings = get_settings()
-        model_name = getattr(settings, self._task_to_env[task])
+        model_name = settings.active_llm_config()["models"][task]
         return get_llm_provider().get_chat_model(model_name, **kwargs)
 
 
