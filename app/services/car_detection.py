@@ -159,12 +159,20 @@ async def detect_cars(image_bytes: bytes) -> tuple[list[VehicleBoundingBox], tup
 
 
 async def classify_car(image_bytes: bytes) -> tuple[Optional[str], Optional[str], float]:
-    """Return (make, model, confidence).
+    """Return (make, model, confidence), or (None, None, 0.0) on any failure.
 
-    Returns (None, None, 0.0) if the top score is below the min threshold.
+    We intentionally swallow 410/400 etc. — when HF's serverless inference
+    drops support for the configured model, we want the caller to silently
+    fall back to the VLM for identity rather than error out the whole pipeline.
     """
     settings = get_settings()
-    data = await _hf_post(settings.HF_CLASSIFICATION_MODEL, image_bytes)
+    if not settings.HF_CLASSIFICATION_MODEL:
+        return None, None, 0.0
+    try:
+        data = await _hf_post(settings.HF_CLASSIFICATION_MODEL, image_bytes)
+    except Exception as exc:
+        logger.debug(f"classify_car: {settings.HF_CLASSIFICATION_MODEL} unavailable ({str(exc)[:120]}), skipping")
+        return None, None, 0.0
     if not isinstance(data, list) or not data:
         return None, None, 0.0
 
@@ -177,16 +185,22 @@ async def classify_car(image_bytes: bytes) -> tuple[Optional[str], Optional[str]
     return make or None, model or None, score
 
 
-# 1x1 white PNG for warm-up requests (68 bytes).
-_WARMUP_PNG = base64.b64decode(
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP8//8/AAX+Av7K2Y0tAAAAAElFTkSuQmCC"
+# Minimal 8×8 white JPEG (~160 bytes). DETR rejects 1×1 images as "broken
+# data stream", so we use a tiny but valid JPEG instead.
+_WARMUP_JPEG = base64.b64decode(
+    "/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0a"
+    "HBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIy"
+    "MjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAIAAgDASIA"
+    "AhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAn/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEB"
+    "AQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwA/wD//2Q=="
 )
 
 
 async def warm_up() -> None:
-    """Fire one tiny request to each HF model so the first user doesn't cold-start.
+    """Fire one tiny request per HF model so the first user request is warm.
 
     Runs in parallel; swallows errors (warmup failure is non-fatal).
+    Skips the classifier if it isn't configured (e.g., deprecated upstream).
     """
     if not is_enabled():
         logger.info("HF warm-up skipped (no HUGGINGFACE_API_KEY configured)")
@@ -195,8 +209,10 @@ async def warm_up() -> None:
     settings = get_settings()
 
     async def _warm(model: str) -> None:
+        if not model:
+            return
         try:
-            await _hf_post(model, _WARMUP_PNG, content_type="image/png")
+            await _hf_post(model, _WARMUP_JPEG, content_type="image/jpeg")
             logger.info(f"HF warmup OK: {model}")
         except Exception as exc:
             logger.warning(f"HF warmup failed for {model}: {str(exc)[:120]}")

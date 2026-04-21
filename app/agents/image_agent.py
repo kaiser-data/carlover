@@ -222,7 +222,10 @@ async def run_image_agent(state: CarAssistantState) -> ImageAgentOutput:
     try:
         image_bytes = await car_detection.fetch_image_bytes(image_url)
     except Exception as exc:
-        logger.warning(f"image_agent: failed to fetch image bytes, falling back to VLM: {exc}")
+        logger.warning(
+            f"image_agent: failed to fetch image bytes, falling back to VLM: "
+            f"{type(exc).__name__}: {exc!r}"
+        )
         return await _run_vlm_path(image_url)
 
     hf_task = asyncio.create_task(_run_hf_path(image_bytes))
@@ -326,7 +329,11 @@ def _merge_hf_and_vlm(hf_result: object, vlm_result: object) -> ImageAgentOutput
 async def _run_vlm_path(image_url: str) -> ImageAgentOutput:
     """Original VLM-only pipeline, preserved for HF-disabled and fallback paths."""
     try:
-        llm = get_model("vision", max_tokens=2048)
+        # Cap max_tokens via extra_body on the ChatOpenAI constructor —
+        # langchain-openai silently drops the `max_tokens` kwarg for some
+        # non-OpenAI models, and .bind() doesn't survive .with_structured_output().
+        # extra_body goes straight into the HTTP request payload.
+        llm = get_model("vision", extra_body={"max_tokens": 2048})
         img_block = _build_image_content(image_url)
 
         structured = llm.with_structured_output(ImageAnalysisResult, method="json_mode")

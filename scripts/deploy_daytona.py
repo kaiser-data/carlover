@@ -91,7 +91,7 @@ def deploy(env: dict[str, str]) -> None:
     cmds = [
         "pip install fastapi uvicorn[standard] pydantic pydantic-settings "
         "langgraph langchain-core langchain-openai supabase openai "
-        "python-multipart loguru python-dotenv httpx daytona-sdk --quiet",
+        "python-multipart loguru python-dotenv httpx daytona-sdk Pillow --quiet",
     ]
     for cmd in cmds:
         r = sandbox.process.exec(cmd, timeout=120)

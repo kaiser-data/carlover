@@ -42,3 +42,30 @@ data/eval_log.jsonl
 # LangGraph checkpoints
 *.db
 .daytona_sandbox_id
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Third-party datasets (copyright-sensitive — DO NOT commit)
+# Academic-use-only datasets like car_models_a (Wapcar) must stay local.
+# ─────────────────────────────────────────────────────────────────────────────
+datasets/
+dataset/
+car_models*/
+car_dataset*/
+training_data/
+test_images/
+*.kaggle
+*.zip
+*.tar
+*.tar.gz
+
+# All image files ignored by default — add frontend assets back explicitly.
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.gif
+*.bmp
+!frontend/**/*.png
+!frontend/**/*.svg
+!frontend/**/*.jpg
+!frontend/**/*.webp
