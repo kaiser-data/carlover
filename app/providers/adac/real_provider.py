@@ -354,22 +354,72 @@ async def _fetch_page(brand_slug: str, model_slug: str) -> Optional[tuple[dict, 
     url = f"{_BASE_URL}/{brand_slug}/{model_slug}/"
     logger.info(f"ADAC fetch: {url}")
 
-    # Route through ScraperAPI residential proxy if key is configured
+    # Fetch strategy, in order of preference:
+    #   1. Supabase Edge Function proxy (free, reachable from Daytona sandbox)
+    #   2. ScraperAPI residential proxy (when SCRAPER_API_KEY is set)
+    #   3. Direct fetch (works from dev machines; blocked on Daytona)
     from app.config import get_settings
-    scraper_key = get_settings().SCRAPER_API_KEY
-    proxy = f"http://scraperapi:{scraper_key}@proxy.scraperapi.com:8001" if scraper_key else None
-    if proxy:
-        logger.debug("ADAC: using ScraperAPI proxy")
+    settings = get_settings()
 
-    try:
+    proxy_fn_url: Optional[str] = None
+    fn_headers: dict[str, str] = dict(_HEADERS)
+    if settings.SUPABASE_URL and settings.SUPABASE_KEY:
+        proxy_fn_url = f"{settings.SUPABASE_URL.rstrip('/')}/functions/v1/adac-proxy"
+        fn_headers["Authorization"] = f"Bearer {settings.SUPABASE_KEY}"
+        fn_headers["apikey"] = settings.SUPABASE_KEY
+
+    scraper_key = settings.SCRAPER_API_KEY
+    scraperapi_proxy = (
+        f"http://scraperapi:{scraper_key}@proxy-server.scraperapi.com:8001"
+        if scraper_key
+        else None
+    )
+
+    async def _fetch_via_supabase() -> Optional[httpx.Response]:
+        if not proxy_fn_url:
+            return None
+        async with httpx.AsyncClient(
+            headers=fn_headers, follow_redirects=True, timeout=30.0
+        ) as client:
+            return await client.get(proxy_fn_url, params={"url": url})
+
+    async def _fetch_direct(use_proxy: Optional[str] = None) -> httpx.Response:
         async with httpx.AsyncClient(
             headers=_HEADERS,
             follow_redirects=True,
             timeout=30.0,
-            proxy=proxy,
+            proxy=use_proxy,
         ) as client:
             await asyncio.sleep(_REQUEST_DELAY)
-            resp = await client.get(url)
+            return await client.get(url)
+
+    try:
+        resp: Optional[httpx.Response] = None
+
+        if proxy_fn_url:
+            try:
+                logger.debug("ADAC: trying Supabase edge proxy")
+                resp = await _fetch_via_supabase()
+                if resp is not None and resp.status_code != 200:
+                    logger.warning(
+                        f"ADAC Supabase proxy returned {resp.status_code}, "
+                        f"falling back. body={resp.text[:200]}"
+                    )
+                    resp = None
+            except Exception as exc:
+                logger.warning(f"ADAC Supabase proxy failed ({exc}), falling back")
+                resp = None
+
+        if resp is None and scraperapi_proxy:
+            try:
+                logger.debug("ADAC: trying ScraperAPI proxy")
+                resp = await _fetch_direct(scraperapi_proxy)
+            except Exception as exc:
+                logger.warning(f"ADAC ScraperAPI proxy failed ({exc}), falling back")
+                resp = None
+
+        if resp is None:
+            resp = await _fetch_direct()
 
         if resp.status_code != 200:
             logger.warning(f"ADAC returned HTTP {resp.status_code} for {url}")

@@ -69,3 +69,9 @@ test_images/
 !frontend/**/*.svg
 !frontend/**/*.jpg
 !frontend/**/*.webp
+
+# Supabase CLI local state
+supabase/.temp/
+
+# Claude Code local state
+.claude/
