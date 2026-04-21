@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import pathlib
 from contextlib import asynccontextmanager
 
@@ -11,6 +12,7 @@ from loguru import logger
 from app.api.routes import chat, debug, health, image, vehicle
 from app.config import get_settings
 from app.graph.graph import build_graph
+from app.services import car_detection
 
 _FRONTEND_DIR = pathlib.Path(__file__).parent.parent / "frontend"
 
@@ -29,9 +31,14 @@ async def lifespan(app: FastAPI):
     app.state.graph = build_graph()
     logger.info("LangGraph ready.")
 
+    # Non-blocking HF model warmup; first user request benefits if it completes
+    # before they arrive, else it just runs alongside the first real call.
+    asyncio.create_task(car_detection.warm_up())
+
     yield
 
     logger.info("Carlover shutting down.")
+    await car_detection.close_client()
 
 
 def create_app() -> FastAPI:

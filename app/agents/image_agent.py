@@ -12,6 +12,7 @@ from app.graph.state import CarAssistantState
 from app.providers.llm.model_router import get_model
 from app.schemas.common import VehicleInfo
 from app.schemas.image_outputs import ImageAgentOutput, VehicleBoundingBox
+from app.services import car_detection
 
 _SYSTEM_PROMPT = """You are an automotive image analysis specialist.
 
@@ -194,8 +195,15 @@ def _build_image_content(image_url: str) -> dict:
 
 async def run_image_agent(state: CarAssistantState) -> ImageAgentOutput:
     """
-    Analyze a vehicle image using a vision-capable LLM.
-    Returns a structured ImageAgentOutput.
+    Analyze a vehicle image.
+
+    When HuggingFace Inference API is configured, detection + classification
+    run there (deterministic, independent of Featherless) in parallel with the
+    VLM describe-only call. HF is the source of truth for identity fields;
+    the VLM provides enrichment (observations, damage, warning lights).
+
+    Graceful degradation: either side can fail and we still return a useful
+    response built from whichever succeeded.
     """
     image_url: Optional[str] = state.get("image_url")
 
@@ -206,6 +214,117 @@ async def run_image_agent(state: CarAssistantState) -> ImageAgentOutput:
             confidence=0.0,
         )
 
+    # No HF configured → keep the original VLM-only path verbatim.
+    if not car_detection.is_enabled():
+        return await _run_vlm_path(image_url)
+
+    # Fetch bytes once; reuse for both HF calls.
+    try:
+        image_bytes = await car_detection.fetch_image_bytes(image_url)
+    except Exception as exc:
+        logger.warning(f"image_agent: failed to fetch image bytes, falling back to VLM: {exc}")
+        return await _run_vlm_path(image_url)
+
+    hf_task = asyncio.create_task(_run_hf_path(image_bytes))
+    vlm_task = asyncio.create_task(_run_vlm_path(image_url))
+    hf_result, vlm_result = await asyncio.gather(hf_task, vlm_task, return_exceptions=True)
+
+    return _merge_hf_and_vlm(hf_result, vlm_result)
+
+
+async def _run_hf_path(image_bytes: bytes) -> dict:
+    """Run HF detection + (conditional) classification.
+
+    Returns a dict with identity fields; raises on total failure.
+    """
+    boxes, _ = await car_detection.detect_cars(image_bytes)
+    count = len(boxes)
+
+    make: Optional[str] = None
+    model: Optional[str] = None
+    classifier_conf = 0.0
+
+    # Only classify when there's exactly one car — otherwise the classifier
+    # would be biased by whichever car dominates, and we can't disambiguate.
+    if count == 1:
+        try:
+            make, model, classifier_conf = await car_detection.classify_car(image_bytes)
+        except Exception as exc:
+            logger.warning(f"classify_car failed: {exc}")
+
+    return {
+        "vehicle_count": count,
+        "vehicle_boxes": boxes,
+        "detected_make": make,
+        "detected_model": model,
+        "classifier_confidence": classifier_conf,
+    }
+
+
+def _merge_hf_and_vlm(hf_result: object, vlm_result: object) -> ImageAgentOutput:
+    """Combine HF identity with VLM enrichment, preferring HF when available."""
+    hf_ok = isinstance(hf_result, dict)
+    vlm_ok = isinstance(vlm_result, ImageAgentOutput)
+
+    if not hf_ok and not vlm_ok:
+        exc = hf_result if isinstance(hf_result, BaseException) else vlm_result
+        logger.error(f"image_agent: both HF and VLM paths failed: {exc}")
+        return ImageAgentOutput(
+            observations=[],
+            limitations=[f"Image analysis failed: {exc}"],
+            confidence=0.0,
+        )
+
+    # Start from VLM output (enrichment) or a blank template if VLM failed.
+    if vlm_ok:
+        out = vlm_result.model_copy()
+    else:
+        logger.warning(f"image_agent: VLM path failed ({vlm_result!r}), using HF-only response")
+        out = ImageAgentOutput(
+            observations=[],
+            limitations=["Descriptive analysis temporarily unavailable."],
+            confidence=0.0,
+        )
+
+    if hf_ok:
+        count = hf_result["vehicle_count"]
+        out = out.model_copy(update={
+            "vehicle_detected": count > 0,
+            "vehicle_count": count,
+            "vehicle_boxes": hf_result["vehicle_boxes"],
+            # HF classifier is the source of truth for make/model when it fires.
+            "detected_make": hf_result["detected_make"] or (None if count != 1 else out.detected_make),
+            "detected_model": hf_result["detected_model"] or (None if count != 1 else out.detected_model),
+            "needs_clarification": count == 0 or count > 1,
+        })
+
+        # Rebuild clarification question from HF's authoritative count.
+        if count == 0:
+            out = out.model_copy(update={"clarification_questions": [
+                "No vehicle detected in the image — please upload a photo of your vehicle."
+            ]})
+        elif count > 1:
+            out = out.model_copy(update={"clarification_questions": [
+                f"{count} vehicles detected — which car do you want analyzed? "
+                "Describe it (e.g. 'the red one on the left') or upload a photo of just that car."
+            ]})
+        else:
+            # Single car — no clarification needed unless VLM flagged unusable quality.
+            keep = out.image_quality == "unusable"
+            out = out.model_copy(update={
+                "clarification_questions": out.clarification_questions if keep else [],
+            })
+
+        # Confidence: blend classifier confidence with VLM confidence (or use classifier only).
+        cc = hf_result.get("classifier_confidence") or 0.0
+        if cc > 0:
+            out = out.model_copy(update={"confidence": max(out.confidence, cc)})
+
+    return out
+
+
+async def _run_vlm_path(image_url: str) -> ImageAgentOutput:
+    """Original VLM-only pipeline, preserved for HF-disabled and fallback paths."""
     try:
         llm = get_model("vision", max_tokens=2048)
         img_block = _build_image_content(image_url)

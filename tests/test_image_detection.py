@@ -220,3 +220,130 @@ async def test_no_image_url_returns_limitation(mock_llm, monkeypatch):
 
     assert result.confidence == 0.0
     assert any("No image" in lim for lim in result.limitations)
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# HF hybrid-path tests — mock car_detection module so no network calls happen
+# ────────────────────────────────────────────────────────────────────────────
+
+
+def _vlm_only_mocks(mock_llm_instance, structured_result):
+    mock_structured = MagicMock()
+    mock_structured.ainvoke = AsyncMock(return_value=structured_result)
+    mock_llm_instance.ainvoke = AsyncMock(return_value=MagicMock(content="1"))
+    mock_llm_instance.with_structured_output = MagicMock(return_value=mock_structured)
+    mock_llm_instance.bind = MagicMock(return_value=mock_llm_instance)
+
+
+@pytest.mark.asyncio
+async def test_hf_detects_single_car_and_classifier_sets_make_model(mock_llm, monkeypatch):
+    """HF detects 1 car + classifier returns Volkswagen Beetle → identity fields come from HF."""
+    from app.agents import image_agent
+    from app.schemas.image_outputs import VehicleBoundingBox
+
+    box = VehicleBoundingBox(label="car #1", x1=0.1, y1=0.2, x2=0.9, y2=0.85, confidence=0.96)
+    vlm_stub = _mock_image_result(
+        vehicle_count=1,
+        detected_make="WrongMake",   # should be overridden by HF classifier
+        detected_model="WrongModel",
+        observations=["Light green convertible, soft-top retracted"],
+        confidence=0.82,
+    )
+    mock_llm_instance = MagicMock()
+    _vlm_only_mocks(mock_llm_instance, vlm_stub)
+
+    monkeypatch.setattr(image_agent.car_detection, "is_enabled", lambda: True)
+    monkeypatch.setattr(image_agent.car_detection, "fetch_image_bytes", AsyncMock(return_value=b"\x89PNG"))
+    monkeypatch.setattr(image_agent.car_detection, "detect_cars", AsyncMock(return_value=([box], (640, 480))))
+    monkeypatch.setattr(
+        image_agent.car_detection,
+        "classify_car",
+        AsyncMock(return_value=("Volkswagen", "Beetle", 0.92)),
+    )
+
+    with patch("app.agents.image_agent.get_model", return_value=mock_llm_instance):
+        result = await image_agent.run_image_agent({"image_url": "https://example.com/beetle.jpg"})
+
+    assert result.vehicle_count == 1
+    assert result.detected_make == "Volkswagen"
+    assert result.detected_model == "Beetle"
+    assert result.needs_clarification is False
+    assert len(result.vehicle_boxes) == 1
+    # VLM observation preserved
+    assert any("convertible" in o.lower() for o in result.observations)
+
+
+@pytest.mark.asyncio
+async def test_hf_detects_two_cars_skips_classifier_and_requests_clarification(mock_llm, monkeypatch):
+    """HF detects 2 cars → classifier not called, clarification card rendered."""
+    from app.agents import image_agent
+    from app.schemas.image_outputs import VehicleBoundingBox
+
+    boxes = [
+        VehicleBoundingBox(label="car #1", x1=0.05, y1=0.3, x2=0.45, y2=0.8, confidence=0.95),
+        VehicleBoundingBox(label="car #2", x1=0.55, y1=0.3, x2=0.95, y2=0.8, confidence=0.94),
+    ]
+    vlm_stub = _mock_image_result(vehicle_count=1, observations=["Two cars on a racetrack"])
+    mock_llm_instance = MagicMock()
+    _vlm_only_mocks(mock_llm_instance, vlm_stub)
+
+    classify_mock = AsyncMock(return_value=("Volkswagen", "Golf", 0.8))
+    monkeypatch.setattr(image_agent.car_detection, "is_enabled", lambda: True)
+    monkeypatch.setattr(image_agent.car_detection, "fetch_image_bytes", AsyncMock(return_value=b"\x89PNG"))
+    monkeypatch.setattr(image_agent.car_detection, "detect_cars", AsyncMock(return_value=(boxes, (800, 600))))
+    monkeypatch.setattr(image_agent.car_detection, "classify_car", classify_mock)
+
+    with patch("app.agents.image_agent.get_model", return_value=mock_llm_instance):
+        result = await image_agent.run_image_agent({"image_url": "https://example.com/two.jpg"})
+
+    assert result.vehicle_count == 2
+    assert result.needs_clarification is True
+    assert len(result.vehicle_boxes) == 2
+    assert result.detected_make is None
+    assert result.detected_model is None
+    assert len(result.clarification_questions) >= 1
+    # Classifier must NOT have been called for multi-car images
+    classify_mock.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_hf_detection_failure_falls_back_to_vlm(mock_llm, monkeypatch):
+    """HF detect_cars raises → _merge returns VLM-only output."""
+    from app.agents import image_agent
+
+    vlm_stub = _mock_image_result(
+        vehicle_count=1,
+        detected_make="BMW",
+        detected_model="3-Series",
+        observations=["Blue sedan"],
+        confidence=0.75,
+    )
+    mock_llm_instance = MagicMock()
+    _vlm_only_mocks(mock_llm_instance, vlm_stub)
+
+    monkeypatch.setattr(image_agent.car_detection, "is_enabled", lambda: True)
+    monkeypatch.setattr(image_agent.car_detection, "fetch_image_bytes", AsyncMock(return_value=b"\x89PNG"))
+    monkeypatch.setattr(
+        image_agent.car_detection,
+        "detect_cars",
+        AsyncMock(side_effect=RuntimeError("HF 503 capacity_exhausted")),
+    )
+
+    with patch("app.agents.image_agent.get_model", return_value=mock_llm_instance):
+        result = await image_agent.run_image_agent({"image_url": "https://example.com/bmw.jpg"})
+
+    # VLM identity preserved when HF fails
+    assert result.detected_make == "BMW"
+    assert result.detected_model == "3-Series"
+
+
+def test_brand_model_splitter_handles_hyphenated_and_multi_word_brands():
+    """dima806 labels like 'Mercedes-Benz C-Class' split correctly."""
+    from app.services.car_detection import _parse_brand_model
+
+    assert _parse_brand_model("Volkswagen Beetle") == ("Volkswagen", "Beetle")
+    assert _parse_brand_model("Mercedes-Benz C-Class") == ("Mercedes-Benz", "C-Class")
+    assert _parse_brand_model("Aston Martin DB11") == ("Aston Martin", "DB11")
+    assert _parse_brand_model("Land Rover Discovery") == ("Land Rover", "Discovery")
+    assert _parse_brand_model("Tesla Model 3") == ("Tesla", "Model 3")
+    assert _parse_brand_model("Ferrari") == ("Ferrari", "")

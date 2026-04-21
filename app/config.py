@@ -28,6 +28,17 @@ class Settings(BaseSettings):
     LLM_MAX_RETRIES: int = 3
 
     # ------------------------------------------------------------------ #
+    # HuggingFace Inference API (optional — deterministic detection + classifier)
+    # ------------------------------------------------------------------ #
+    HUGGINGFACE_API_KEY: str = ""
+    HF_API_BASE: str = "https://router.huggingface.co/hf-inference"
+    HF_DETECTION_MODEL: str = "facebook/detr-resnet-50"
+    HF_CLASSIFICATION_MODEL: str = "dima806/car_models_image_detection"
+    HF_TIMEOUT: int = 30
+    HF_DETECTION_MIN_SCORE: float = 0.50
+    HF_CLASSIFICATION_MIN_SCORE: float = 0.50
+
+    # ------------------------------------------------------------------ #
     # Supabase
     # ------------------------------------------------------------------ #
     SUPABASE_URL: str = ""

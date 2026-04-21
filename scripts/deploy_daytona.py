@@ -71,6 +71,7 @@ def deploy(env: dict[str, str]) -> None:
                 "FEATHERLESS_MODEL_REASONING": env.get("FEATHERLESS_MODEL_REASONING", "Qwen/Qwen2.5-72B-Instruct"),
                 "FEATHERLESS_MODEL_VISION": env.get("FEATHERLESS_MODEL_VISION", "mistralai/Mistral-Small-3.2-24B-Instruct-2506"),
                 "FEATHERLESS_MODEL_RESPONSE": env.get("FEATHERLESS_MODEL_RESPONSE", "Qwen/Qwen2.5-72B-Instruct"),
+                "HUGGINGFACE_API_KEY": env.get("HUGGINGFACE_API_KEY", ""),
                 "SUPABASE_URL": env.get("SUPABASE_URL", ""),
                 "SUPABASE_KEY": env.get("SUPABASE_KEY", ""),
                 "DAYTONA_API_KEY": env.get("DAYTONA_API_KEY", ""),
