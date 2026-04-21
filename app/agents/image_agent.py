@@ -128,8 +128,13 @@ class ImageAnalysisResult(BaseModel):
         return data
 
 
-async def _invoke_with_429_retry(structured, messages, max_attempts: int = 5):
-    """Retry structured.ainvoke with exponential backoff on 429/503 transient errors."""
+async def _invoke_with_429_retry(structured, messages, max_attempts: int = 2):
+    """Retry structured.ainvoke with brief backoff on 429/503 transient errors.
+
+    Kept intentionally short (2 attempts, 3s backoff) because long retry loops
+    during Featherless capacity outages worsen the problem — each in-flight
+    retry holds a concurrency slot against our plan.
+    """
     delay = 3.0
     last_exc: Optional[Exception] = None
     for attempt in range(1, max_attempts + 1):
